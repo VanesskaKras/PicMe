@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --navy-950: #050814;
+    --navy-900: #0a0f24;
+    --navy-800: #0f1738;
+    --navy-700: #19234d;
+    --pink-accent: #ff2a85;
+    --cyan-accent: #00f0ff;
+    --emerald-accent: #10b981;
+  }
+  
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #070b19;
+    color: #f1f5f9;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Syne', sans-serif;
+  }
+
+  .font-mono-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Custom Leaflet Map styling for seamless dark navy tone */
+.leaflet-container {
+  background-color: #070b19 !important;
+  font-family: inherit !important;
+  width: 100%;
+  height: 100%;
+}
+
+.leaflet-tile {
+  filter: brightness(0.65) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) !important;
+}
+
+/* Custom marker pulse radar */
+@keyframes radar-pulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+.animate-radar {
+  animation: radar-pulse 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+/* Hide default leaflet attribution / zoom controls custom styling */
+.leaflet-control-zoom {
+  border: none !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: #0c1228 !important;
+  color: #94a3b8 !important;
+  border-color: #1e293b !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(7, 11, 25, 0.7) !important;
+  color: #64748b !important;
+  font-size: 10px !important;
+  backdrop-filter: blur(8px);
+}
+
+.leaflet-control-attribution a {
+  color: #94a3b8 !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #070b19;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e294b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}

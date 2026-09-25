@@ -1,0 +1,10 @@
+{
+  "name": "PicMe Dublin — Urban Resonance Map",
+  "description": "An intentional Dublin city map connecting people through verified character, real-time moods, local places, and community opportunities with zero spam.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

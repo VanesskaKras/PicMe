@@ -457,22 +457,6 @@ export default function App() {
 
       {/* MOBILE APPLICATION CONTAINER */}
       <div className="relative w-full max-w-[430px] h-full sm:h-[94vh] sm:max-h-[890px] sm:rounded-[40px] sm:border-[8px] sm:border-ink-strong sm:shadow-[0_20px_60px_rgba(31,42,16,0.35)] bg-canvas overflow-hidden flex flex-col @container">
-        {/* TOP MOBILE STATUS BAR */}
-        <div className="h-10 px-6 pt-2 bg-white/90 backdrop-blur-md flex items-center justify-between text-[11px] text-ink-strong z-30 shrink-0 select-none">
-          <span className="font-semibold font-mono">9:41</span>
-          {/* Dynamic Island pill */}
-          <div className="w-24 h-4 bg-ink-strong rounded-full shadow-inner flex items-center justify-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-opp animate-ping" />
-            <span className="text-[9px] text-opp font-mono">{t('Active')}</span>
-          </div>
-          <div className="flex items-center gap-1 font-mono text-[10px]">
-            <span>5G</span>
-            <span className="w-4 h-2 rounded-sm border border-line-strong p-[1px] inline-flex items-center">
-              <span className="w-2.5 h-full bg-success rounded-2xs" />
-            </span>
-          </div>
-        </div>
-
           {/* MAP CANVAS AREA */}
           <div className="relative flex-1 w-full overflow-hidden">
             <GoogleDublinMap

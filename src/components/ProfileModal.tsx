@@ -16,20 +16,12 @@ import {
   Pencil,
   Radio,
   Settings,
-  Trash2,
   User,
-  UserX,
   X,
 } from 'lucide-react';
 import { UserProfile, VisibilityLevel, DublinPlace, DublinOpportunity } from '../types';
 import { GraphicIcon } from './GraphicIcon';
 import { useI18n, LANGUAGES, TFunction } from '../i18n';
-
-export interface BlockedPerson {
-  id: string;
-  name: string;
-  avatar: string;
-}
 
 export interface ProfileSettings {
   notifications: { signals: boolean; moodExpiring: boolean; opportunitiesNearby: boolean };
@@ -62,7 +54,6 @@ interface ProfileModalProps {
   user: UserProfile;
   places: DublinPlace[];
   opportunities: DublinOpportunity[];
-  blockedPeople: BlockedPerson[];
   onUpdateVisibility: (level: VisibilityLevel) => void;
   onOpenOnboardingEdit: () => void;
   onOpenAura: () => void;
@@ -70,9 +61,7 @@ interface ProfileModalProps {
   onChangeMood: () => void;
   onShowPlace: (place: DublinPlace) => void;
   onShowOpportunity: (opp: DublinOpportunity) => void;
-  onUnblock: (id: string) => void;
   onLogout: () => void;
-  onDeleteAccount: () => void;
 }
 
 const VISIBILITY_OPTIONS: { level: VisibilityLevel; label: string }[] = [
@@ -126,7 +115,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   user,
   places,
   opportunities,
-  blockedPeople,
   onUpdateVisibility,
   onOpenOnboardingEdit,
   onOpenAura,
@@ -134,13 +122,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   onChangeMood,
   onShowPlace,
   onShowOpportunity,
-  onUnblock,
   onLogout,
-  onDeleteAccount,
 }) => {
   const [view, setView] = useState<'profile' | 'settings'>('profile');
-  const [dialog, setDialog] = useState<null | 'preview' | 'logout' | 'delete'>(null);
-  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [dialog, setDialog] = useState<null | 'preview' | 'logout'>(null);
   const [settings, setSettings] = useState<ProfileSettings>(loadProfileSettings);
   const [now, setNow] = useState(Date.now());
   const { lang, setLang, t } = useI18n();
@@ -293,44 +278,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           <p className="text-[11px] text-muted mt-1.5 px-1">{t('Applied the next time you open the map.')}</p>
         </section>
 
-        {/* Blocked people */}
-        <section>
-          <SectionTitle>{t('Blocked people')}</SectionTitle>
-          <div className="rounded-3xl bg-card border border-line divide-y divide-line">
-            {blockedPeople.length === 0 ? (
-              <div className="px-4 py-4 flex items-center gap-3 text-sm text-muted">
-                <UserX className="w-4 h-4" />
-                {t('Nobody blocked')}
-              </div>
-            ) : (
-              blockedPeople.map((p) => (
-                <div key={p.id} className="px-4 py-3 flex items-center gap-3">
-                  <img src={p.avatar} alt={p.name} className="w-8 h-8 rounded-full object-cover" />
-                  <span className="flex-1 text-sm text-ink-strong truncate">{p.name}</span>
-                  <button onClick={() => onUnblock(p.id)} className={`${btnBase} px-3 py-1.5 bg-ink text-white`}>
-                    {t('Unblock')}
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
-
-        {/* Log out / delete */}
+        {/* Log out */}
         <section className="pt-2 pb-4 flex flex-col items-start gap-3 px-1">
           <button onClick={() => setDialog('logout')} className="text-sm font-semibold text-danger flex items-center gap-2">
             <LogOut className="w-4 h-4" />
             {t('Log out')}
-          </button>
-          <button
-            onClick={() => {
-              setDeleteConfirmText('');
-              setDialog('delete');
-            }}
-            className="text-sm font-semibold text-danger flex items-center gap-2"
-          >
-            <Trash2 className="w-4 h-4" />
-            {t('Delete account')}
           </button>
         </section>
       </div>
@@ -651,39 +603,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             >
               <EyeOff className="w-3.5 h-3.5" />
               {t('Go invisible')}
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    if (dialog === 'delete') {
-      const canDelete = deleteConfirmText.trim().toUpperCase() === t('DELETE').toUpperCase();
-      body = (
-        <div className="space-y-3.5">
-          <h4 className="text-base font-bold text-danger">{t('Delete your account for good?')}</h4>
-          <p className="text-xs text-ink-strong">
-            {t("Your profile, Aura, signals, and everything you've added to the map will be permanently removed. This can't be undone.")}
-          </p>
-          <label className="block">
-            <span className="text-[11px] text-muted">{t('Type {word} to confirm', { word: t('DELETE') })}</span>
-            <input
-              value={deleteConfirmText}
-              onChange={(e) => setDeleteConfirmText(e.target.value)}
-              className="mt-1 w-full px-3.5 py-2.5 rounded-2xl bg-card border border-line text-sm text-ink-strong outline-none focus:border-danger"
-              placeholder={t('DELETE')}
-            />
-          </label>
-          <div className="flex gap-2">
-            <button
-              onClick={onDeleteAccount}
-              disabled={!canDelete}
-              className={`${btnBase} flex-1 py-2.5 text-sm ${canDelete ? 'bg-danger text-white' : 'bg-line text-muted cursor-not-allowed'}`}
-            >
-              {t('Delete account')}
-            </button>
-            <button onClick={() => setDialog(null)} className={`${btnBase} flex-1 py-2.5 bg-card border border-line text-ink-strong text-sm`}>
-              {t('Cancel')}
             </button>
           </div>
         </div>

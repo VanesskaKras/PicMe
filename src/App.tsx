@@ -57,7 +57,7 @@ import { AuraModal } from './components/AuraModal';
 import { ChatDrawer } from './components/ChatDrawer';
 import { ItemDetailDrawer } from './components/ItemDetailDrawer';
 import { OpportunitiesListModal } from './components/OpportunitiesListModal';
-import { ProfileModal, BlockedPerson, loadProfileSettings } from './components/ProfileModal';
+import { ProfileModal, loadProfileSettings } from './components/ProfileModal';
 import { PlusActionDrawer } from './components/PlusActionDrawer';
 import { AddPlaceModal } from './components/AddPlaceModal';
 import { AddOpportunityModal } from './components/AddOpportunityModal';
@@ -119,19 +119,6 @@ export default function App() {
 
   // Map layers: defaults come from Profile > Settings > Default map layers
   const [layers] = useState(() => loadProfileSettings().defaultLayers);
-
-  // People the user blocked from Signals (managed in Profile > Settings)
-  const [blockedPeople, setBlockedPeople] = useState<BlockedPerson[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem('picme_blocked') || '[]');
-    } catch (e) {
-      return [];
-    }
-  });
-  const saveBlocked = (list: BlockedPerson[]) => {
-    setBlockedPeople(list);
-    localStorage.setItem('picme_blocked', JSON.stringify(list));
-  };
 
   // Places & Opportunities (persisted with initial defaults)
   const [places, setPlaces] = useState<DublinPlace[]>(() => {
@@ -375,12 +362,8 @@ export default function App() {
     showToast(t('Dialogue respectfully closed. +5 Aura awarded for courtesy.'));
   };
 
-  // Handle Block / Report
+  // Handle Mute / Report
   const handleBlockReport = (threadId: string) => {
-    const thread = chatThreads.find((t) => t.id === threadId);
-    if (thread && !blockedPeople.some((b) => b.id === thread.peerId)) {
-      saveBlocked([...blockedPeople, { id: thread.peerId, name: thread.peerName, avatar: thread.peerAvatar }]);
-    }
     setChatThreads((prev) => prev.filter((t) => t.id !== threadId));
     showToast(t('Contact muted. Your Aura remains fully protected.'));
   };
@@ -651,7 +634,6 @@ export default function App() {
               user={userProfile}
               places={places}
               opportunities={opportunities}
-              blockedPeople={blockedPeople}
               onUpdateVisibility={(level: VisibilityLevel) => {
                 saveProfile({ visibility: level });
                 showToast(t('Visibility set to {level}', { level: t(({ exact: 'Point', zone: 'Zone', district: 'District', invisible: 'Invisible' } as const)[level]).toLowerCase() }));
@@ -675,15 +657,8 @@ export default function App() {
                 setSelectedPlace(null);
                 setActiveTab('map');
               }}
-              onUnblock={(id) => saveBlocked(blockedPeople.filter((b) => b.id !== id))}
               onLogout={() => {
                 localStorage.removeItem('picme_onboarded');
-                window.location.reload();
-              }}
-              onDeleteAccount={() => {
-                Object.keys(localStorage)
-                  .filter((k) => k.startsWith('picme_'))
-                  .forEach((k) => localStorage.removeItem(k));
                 window.location.reload();
               }}
             />

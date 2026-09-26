@@ -71,6 +71,8 @@ export interface DublinPlace {
   auraScore: number;
   tags: string[];
   imageUrl?: string;
+  createdByMe?: boolean;
+  createdAt?: number; // timestamp ms
 }
 
 export interface DublinOpportunity {
@@ -87,6 +89,8 @@ export interface DublinOpportunity {
   expiresInDays: number;
   relevantFields: string[];
   verifiedByAura: boolean;
+  createdByMe?: boolean;
+  createdAt?: number; // timestamp ms
 }
 
 export interface NearbyDublinUser {

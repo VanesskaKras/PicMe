@@ -161,21 +161,21 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-2xl bg-[#0a0f24] border border-cyan-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[88vh] max-h-[720px]">
+    <div className="absolute inset-0 z-30 bg-white flex flex-col">
+      <div className="relative w-full flex-1 min-h-0 bg-white overflow-hidden flex flex-col">
         {/* Glow Header */}
-        <div className="relative p-4 sm:p-5 bg-gradient-to-b from-[#14183a] to-[#0a0f24] border-b border-slate-800 shrink-0">
+        <div className="relative p-4 @md:p-5 bg-gradient-to-b from-white to-white border-b border-line shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {/* Green Bolt Icon */}
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(0,200,117,0.3)]">
-                <Zap className="w-5 h-5 fill-emerald-400" />
+              <div className="w-10 h-10 rounded-2xl bg-people-soft border border-people/40 flex items-center justify-center text-people-strong shadow-sm">
+                <Zap className="w-5 h-5 fill-people" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                <h3 className="text-base font-bold text-ink-strong tracking-tight flex items-center gap-2">
                   Signals & Resonance
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted">
                   Intentional Dublin connection radar · Zero ghosting protocol
                 </p>
               </div>
@@ -183,24 +183,15 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
             <div className="flex items-center gap-3">
               {/* Daily Signals Pill */}
-              <div className="px-3 py-1.5 rounded-xl bg-slate-900/90 border border-emerald-500/30 text-emerald-300 font-mono text-xs flex items-center gap-1.5 shadow-sm">
-                <Zap className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" />
+              <div className="px-3 py-1.5 rounded-xl bg-card/90 border border-people/30 text-people-strong font-mono text-xs flex items-center gap-1.5 shadow-sm">
+                <Zap className="w-3.5 h-3.5 text-people-strong fill-people" />
                 <span>{dailySignalsRemaining} / 10 left</span>
               </div>
-
-              {/* Close Button */}
-              <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
-                aria-label="Close"
-              >
-                <X className="w-4 h-4" />
-              </button>
             </div>
           </div>
 
           {/* TWO MAIN TABS (RESONANCE & REQUESTS) - EXPLICITLY NO HISTORY TAB */}
-          <div className="grid grid-cols-2 gap-2 mt-4 p-1 rounded-2xl bg-[#070b19] border border-slate-800/80">
+          <div className="grid grid-cols-2 gap-2 mt-4 p-1 rounded-2xl bg-card border border-line">
             {/* TAB 1: RESONANCE */}
             <button
               onClick={() => {
@@ -209,13 +200,13 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               }}
               className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                 activeMainTab === 'resonance'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-[0_0_15px_rgba(0,200,117,0.15)]'
-                  : 'text-slate-400 hover:text-white border border-transparent'
+                  ? 'bg-ink-soft text-ink border border-ink/40'
+                  : 'text-muted hover:text-ink-strong border border-transparent'
               }`}
             >
-              <Zap className="w-4 h-4 text-emerald-400" />
+              <Zap className="w-4 h-4 text-current" />
               <span>Resonance</span>
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-people-soft text-people-strong border border-people/30">
                 {nearbyUsers.length}
               </span>
             </button>
@@ -225,14 +216,14 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               onClick={() => setActiveMainTab('requests')}
               className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                 activeMainTab === 'requests'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_15px_rgba(0,240,255,0.15)]'
-                  : 'text-slate-400 hover:text-white border border-transparent'
+                  ? 'bg-ink-soft text-ink border border-ink/40'
+                  : 'text-muted hover:text-ink-strong border border-transparent'
               }`}
             >
-              <Radio className="w-4 h-4 text-cyan-400" />
+              <Radio className="w-4 h-4 text-current" />
               <span>Requests</span>
               {receivedThreads.length > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-pink-500/20 text-pink-300 border border-pink-500/30 animate-pulse">
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-people-soft text-people-strong border border-people/30 animate-pulse">
                   {receivedThreads.length}
                 </span>
               )}
@@ -241,7 +232,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
         </div>
 
         {/* BODY CONTENT AREA */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+        <div className="flex-1 overflow-y-auto p-4 @md:p-5">
           {/* ========================================================================= */}
           {/* TAB 1: RESONANCE VIEW                                                     */}
           {/* ========================================================================= */}
@@ -249,13 +240,13 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
             <div className="space-y-4">
               {/* Sub-filter chips */}
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                <span className="text-[11px] font-bold text-slate-400 shrink-0">Filter:</span>
+                <span className="text-[11px] font-bold text-muted shrink-0">Filter:</span>
                 <button
                   onClick={() => setResonanceFilter('all')}
                   className={`px-3 py-1 rounded-xl text-[11px] font-medium transition-all shrink-0 ${
                     resonanceFilter === 'all'
-                      ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400 font-bold shadow-sm'
-                      : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800'
+                      ? 'bg-ink-soft text-ink border border-ink/40 font-bold shadow-sm'
+                      : 'bg-card/80 text-muted hover:text-ink-strong border border-line'
                   }`}
                 >
                   All Resonant ({nearbyUsers.length})
@@ -264,19 +255,19 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                   onClick={() => setResonanceFilter('mood')}
                   className={`px-3 py-1 rounded-xl text-[11px] font-medium transition-all shrink-0 flex items-center gap-1 ${
                     resonanceFilter === 'mood'
-                      ? 'bg-pink-500/20 text-pink-200 border border-pink-400 font-bold shadow-sm'
-                      : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800'
+                      ? 'bg-ink-soft text-ink border border-ink/40 font-bold shadow-sm'
+                      : 'bg-card/80 text-muted hover:text-ink-strong border border-line'
                   }`}
                 >
                   <span>Shared Mood</span>
-                  <Coffee className="w-3 h-3 text-pink-300" />
+                  <Coffee className="w-3 h-3 text-current" />
                 </button>
                 <button
                   onClick={() => setResonanceFilter('high_match')}
                   className={`px-3 py-1 rounded-xl text-[11px] font-medium transition-all shrink-0 ${
                     resonanceFilter === 'high_match'
-                      ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400 font-bold shadow-sm'
-                      : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800'
+                      ? 'bg-ink-soft text-ink border border-ink/40 font-bold shadow-sm'
+                      : 'bg-card/80 text-muted hover:text-ink-strong border border-line'
                   }`}
                 >
                   High Match (80%+)
@@ -285,11 +276,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                   onClick={() => setResonanceFilter('nearby')}
                   className={`px-3 py-1 rounded-xl text-[11px] font-medium transition-all shrink-0 flex items-center gap-1 ${
                     resonanceFilter === 'nearby'
-                      ? 'bg-amber-500/20 text-amber-200 border border-amber-400 font-bold shadow-sm'
-                      : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800'
+                      ? 'bg-ink-soft text-ink border border-ink/40 font-bold shadow-sm'
+                      : 'bg-card/80 text-muted hover:text-ink-strong border border-line'
                   }`}
                 >
-                  <MapPin className="w-3 h-3 text-amber-400" />
+                  <MapPin className="w-3 h-3 text-current" />
                   <span>Nearby (&lt;1.2km)</span>
                 </button>
               </div>
@@ -303,7 +294,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                   return (
                     <div
                       key={user.id}
-                      className="p-4 rounded-2xl bg-[#0c142e] border border-cyan-500/20 hover:border-cyan-500/40 transition-all space-y-3 shadow-lg"
+                      className="p-4 rounded-2xl bg-card border border-line hover:border-line transition-all space-y-3 shadow-lg"
                     >
                       {/* Top User Info Row */}
                       <div className="flex items-start justify-between gap-3">
@@ -312,24 +303,24 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                             <img
                               src={user.avatarUrl}
                               alt={user.name}
-                              className="w-12 h-12 rounded-full object-cover border border-cyan-400/50 bg-slate-900"
+                              className="w-12 h-12 rounded-full object-cover border border-people/50 bg-card"
                             />
                             {user.mood && (
-                              <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-slate-950 border border-pink-400 flex items-center justify-center shadow">
-                                <GraphicIcon nameOrEmoji={user.mood.emoji} size="xs" />
+                              <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white border border-people flex items-center justify-center shadow">
+                                <GraphicIcon nameOrEmoji={user.mood.emoji} size="xs" className="text-people-strong" />
                               </span>
                             )}
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <h4 className="text-sm font-bold text-white">{user.name}</h4>
-                              <span className="text-xs text-pink-400 font-mono">{user.handle}</span>
+                              <h4 className="text-sm font-bold text-ink-strong">{user.name}</h4>
+                              <span className="text-xs text-people-strong font-mono">{user.handle}</span>
                             </div>
-                            <p className="text-xs text-slate-400">
+                            <p className="text-xs text-muted">
                               {user.identity} · {user.activity}
                             </p>
-                            <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                              <MapPin className="w-3 h-3 text-cyan-400" />
+                            <p className="text-[11px] text-subtle flex items-center gap-1 mt-0.5">
+                              <MapPin className="w-3 h-3 text-muted" />
                               <span>{user.district} · {distanceStr}</span>
                             </p>
                           </div>
@@ -337,36 +328,36 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
                         {/* Scores */}
                         <div className="text-right shrink-0">
-                          <div className="inline-block px-2.5 py-1 rounded-xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-300 font-mono text-xs font-bold shadow-sm">
+                          <div className="inline-block px-2.5 py-1 rounded-xl bg-people-soft border border-people/30 text-people-strong font-mono text-xs font-bold shadow-sm">
                             {user.mutualScore}% Resonance
                           </div>
-                          <div className="text-[10px] text-emerald-400 font-mono mt-1">
+                          <div className="text-[10px] text-people-strong font-mono mt-1">
                             {user.auraScore} Aura
                           </div>
                         </div>
                       </div>
 
                       {/* Resonance Reason Banner */}
-                      <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-1 text-xs">
+                      <div className="p-2.5 rounded-xl bg-white/70 border border-line space-y-1 text-xs">
                         {user.mood ? (
-                          <div className="flex items-start gap-2 text-pink-300">
+                          <div className="flex items-start gap-2 text-people-strong">
                             <span className="shrink-0 mt-0.5">
-                              <GraphicIcon nameOrEmoji={user.mood.emoji} size="sm" />
+                              <GraphicIcon nameOrEmoji={user.mood.emoji} size="sm" className="text-people-strong" />
                             </span>
                             <div className="min-w-0">
-                              <span className="font-semibold text-white">{user.mood.text}</span>
+                              <span className="font-semibold text-ink-strong">{user.mood.text}</span>
                               {user.mood.note && (
-                                <p className="text-[11px] text-slate-400 italic mt-0.5 truncate">
+                                <p className="text-[11px] text-muted italic mt-0.5 truncate">
                                   "{user.mood.note}"
                                 </p>
                               )}
                             </div>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1.5 text-slate-300">
-                            <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <div className="flex items-center gap-1.5 text-muted">
+                            <Sparkles className="w-3.5 h-3.5 text-people-strong shrink-0" />
                             <span>
-                              Status: <strong className="text-white">{user.status}</strong>
+                              Status: <strong className="text-ink-strong">{user.status}</strong>
                             </span>
                           </div>
                         )}
@@ -374,13 +365,13 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         {/* Shared Tags */}
                         {user.mutualTags.length > 0 && (
                           <div className="flex items-center gap-1.5 pt-1 flex-wrap">
-                            <span className="text-[10px] text-slate-500 uppercase tracking-wider">
+                            <span className="text-[10px] text-subtle uppercase tracking-wider">
                               Shared:
                             </span>
                             {user.mutualTags.map((tag) => (
                               <span
                                 key={tag}
-                                className="px-2 py-0.5 rounded-md text-[10px] bg-pink-500/15 text-pink-300 border border-pink-500/30"
+                                className="px-2 py-0.5 rounded-md text-[10px] bg-people-soft text-people-strong border border-people/30"
                               >
                                 {tag}
                               </span>
@@ -391,13 +382,13 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
                       {/* Card Footer Action */}
                       <div className="flex items-center justify-between pt-1">
-                        <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                          <Compass className="w-3.5 h-3.5 text-cyan-400" />
-                          <span>Status: <strong className="text-slate-200">{user.status}</strong></span>
+                        <span className="text-[11px] text-muted flex items-center gap-1">
+                          <Compass className="w-3.5 h-3.5 text-people-strong" />
+                          <span>Status: <strong className="text-ink-strong">{user.status}</strong></span>
                         </span>
 
                         {isSignalSent ? (
-                          <span className="px-3 py-1.5 rounded-xl bg-slate-900 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
+                          <span className="px-3 py-1.5 rounded-xl bg-card border border-people/30 text-people-strong text-xs font-semibold flex items-center gap-1.5">
                             <CheckCircle className="w-3.5 h-3.5" />
                             <span>Signal Radiated</span>
                           </span>
@@ -407,8 +398,8 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                             disabled={dailySignalsRemaining <= 0}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md ${
                               dailySignalsRemaining > 0
-                                ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 hover:opacity-95 shadow-emerald-500/20'
-                                : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                                ? 'bg-people text-ink-strong hover:opacity-95 shadow-people/20'
+                                : 'bg-line text-subtle cursor-not-allowed'
                             }`}
                           >
                             <Zap className="w-3.5 h-3.5 fill-current" />
@@ -421,15 +412,15 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                 })}
 
                 {resonantUsers.length === 0 && (
-                  <div className="p-8 text-center bg-[#0c142e] border border-slate-800 rounded-3xl space-y-3">
-                    <Compass className="w-10 h-10 text-slate-600 mx-auto" />
-                    <h4 className="text-sm font-bold text-white">No Resonant Signals for this Filter</h4>
-                    <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  <div className="p-8 text-center bg-card border border-line rounded-3xl space-y-3">
+                    <Compass className="w-10 h-10 text-subtle mx-auto" />
+                    <h4 className="text-sm font-bold text-ink-strong">No Resonant Signals for this Filter</h4>
+                    <p className="text-xs text-muted max-w-sm mx-auto">
                       Try switching to "All Resonant" or update your mood to match more Dubliners nearby.
                     </p>
                     <button
                       onClick={() => setResonanceFilter('all')}
-                      className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-cyan-400 text-xs font-semibold hover:border-cyan-500/40"
+                      className="px-4 py-2 rounded-xl bg-card border border-line text-ink text-xs font-semibold hover:border-ink/40"
                     >
                       Show All Resonant ({nearbyUsers.length})
                     </button>
@@ -438,17 +429,17 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               </div>
 
               {/* Resonance Tip Box */}
-              <div className="p-3.5 rounded-2xl bg-[#091024] border border-cyan-500/20 flex items-center justify-between gap-3 text-xs">
+              <div className="p-3.5 rounded-2xl bg-card border border-line flex items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-2.5">
-                  <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />
-                  <p className="text-[11px] text-slate-400 leading-tight">
+                  <Sparkles className="w-4 h-4 text-people-strong shrink-0" />
+                  <p className="text-[11px] text-muted leading-tight">
                     Want higher resonance? Update your active mood and status to broadcast what you’re currently up for.
                   </p>
                 </div>
                 {onOpenStatusMood && (
                   <button
                     onClick={onOpenStatusMood}
-                    className="px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-400/30 text-cyan-200 text-[11px] font-bold shrink-0 hover:bg-cyan-500/30"
+                    className="px-3 py-1.5 rounded-xl bg-ink text-white text-[11px] font-bold shrink-0 hover:bg-ink-strong"
                   >
                     Edit Mood
                   </button>
@@ -466,11 +457,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               {currentDialogueThread ? (
                 <div className="space-y-4">
                   {/* Top Bar with Back Button */}
-                  <div className="p-3 rounded-2xl bg-[#0e1635] border border-slate-800 flex items-center justify-between">
+                  <div className="p-3 rounded-2xl bg-card border border-line flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <button
                         onClick={() => setActiveThreadId(null)}
-                        className="p-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center gap-1 text-xs"
+                        className="p-1.5 rounded-xl bg-card border border-line text-muted hover:text-ink-strong flex items-center gap-1 text-xs"
                       >
                         <ArrowLeft className="w-4 h-4" />
                         <span>Requests</span>
@@ -478,41 +469,41 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       <img
                         src={currentDialogueThread.peerAvatar}
                         alt={currentDialogueThread.peerName}
-                        className="w-8 h-8 rounded-full object-cover border border-cyan-400/50"
+                        className="w-8 h-8 rounded-full object-cover border border-people/50"
                       />
                       <div>
-                        <h4 className="text-xs font-bold text-white">
+                        <h4 className="text-xs font-bold text-ink-strong">
                           {currentDialogueThread.peerName}
                         </h4>
-                        <span className="text-[10px] text-cyan-300 font-mono">
+                        <span className="text-[10px] text-muted font-mono">
                           {currentDialogueThread.peerStatus}
                         </span>
                       </div>
                     </div>
 
-                    <div className="px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-mono flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-amber-400" />
+                    <div className="px-2.5 py-1 rounded-xl bg-warning-soft border border-warning/30 text-warning text-[10px] font-mono flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-warning" />
                       <span>~{Math.round(currentDialogueThread.timerSecondsRemaining / 60)}m window</span>
                     </div>
                   </div>
 
                   {/* Messages Flow Area */}
-                  <div className="p-4 rounded-2xl bg-[#080d1e] border border-slate-800 min-h-[220px] max-h-[320px] overflow-y-auto space-y-3">
+                  <div className="p-4 rounded-2xl bg-card border border-line min-h-[220px] max-h-[320px] overflow-y-auto space-y-3">
                     {currentDialogueThread.stage === 'hidden_notification' &&
                     !revealedSecrets[currentDialogueThread.id] ? (
-                      <div className="p-5 rounded-2xl bg-[#14122d] border border-pink-500/30 text-center space-y-3 my-4">
-                        <div className="w-10 h-10 rounded-full bg-pink-500/20 border border-pink-400/40 text-pink-400 flex items-center justify-center mx-auto">
+                      <div className="p-5 rounded-2xl bg-card border border-people/30 text-center space-y-3 my-4">
+                        <div className="w-10 h-10 rounded-full bg-people-soft border border-people/40 text-people-strong flex items-center justify-center mx-auto">
                           <Lock className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="text-xs font-bold text-white">Protected Message Preview</h4>
-                          <p className="text-[11px] text-slate-400 max-w-sm mx-auto mt-1">
+                          <h4 className="text-xs font-bold text-ink-strong">Protected Message Preview</h4>
+                          <p className="text-[11px] text-muted max-w-sm mx-auto mt-1">
                             In PicMe, message preview is shielded on initial notification so nobody reads in secret.
                           </p>
                         </div>
                         <button
                           onClick={() => handleReveal(currentDialogueThread.id)}
-                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-bold text-xs shadow-md shadow-pink-500/20 inline-flex items-center gap-1.5"
+                          className="px-4 py-2 rounded-xl bg-ink hover:bg-ink-strong text-white font-bold text-xs shadow-md shadow-ink/20 inline-flex items-center gap-1.5"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span>Reveal Intent & Open Safe Dialogue</span>
@@ -520,12 +511,12 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       </div>
                     ) : (
                       <>
-                        <div className="p-2 rounded-xl bg-[#0d1635] border border-cyan-500/20 text-[10px] text-slate-300 flex items-center justify-between">
-                          <span className="flex items-center gap-1 text-cyan-400">
+                        <div className="p-2 rounded-xl bg-card border border-line text-[10px] text-muted flex items-center justify-between">
+                          <span className="flex items-center gap-1 text-people-strong">
                             <Shield className="w-3 h-3" />
                             Honest dialogue active
                           </span>
-                          <span className="text-slate-400">
+                          <span className="text-muted">
                             Replying or declining keeps your Aura protected
                           </span>
                         </div>
@@ -540,13 +531,13 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                               <div
                                 className={`max-w-[85%] p-3 rounded-2xl text-xs leading-relaxed ${
                                   isMe
-                                    ? 'bg-cyan-500 text-slate-950 font-medium rounded-tr-none'
-                                    : 'bg-[#121a38] text-slate-100 border border-slate-800 rounded-tl-none'
+                                    ? 'bg-people text-ink-strong font-medium rounded-tr-none'
+                                    : 'bg-card text-ink-strong border border-line rounded-tl-none'
                                 }`}
                               >
                                 {msg.text}
                               </div>
-                              <span className="text-[9px] text-slate-500 mt-1 px-1 font-mono">
+                              <span className="text-[9px] text-subtle mt-1 px-1 font-mono">
                                 {msg.time}
                               </span>
                             </div>
@@ -557,7 +548,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                   </div>
 
                   {/* Actions & Reply Bar */}
-                  <div className="p-3 bg-[#0d1430] border border-slate-800 rounded-2xl space-y-2">
+                  <div className="p-3 bg-card border border-line rounded-2xl space-y-2">
                     {/* Courteous closure options */}
                     <div className="flex items-center justify-between gap-2">
                       <button
@@ -565,9 +556,9 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           onPolitelyDecline(currentDialogueThread.id);
                           setActiveThreadId(null);
                         }}
-                        className="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-[11px] font-medium flex items-center gap-1"
+                        className="px-3 py-1 rounded-xl bg-card border border-line text-muted hover:text-ink-strong text-[11px] font-medium flex items-center gap-1"
                       >
-                        <CheckCircle className="w-3 h-3 text-cyan-400" />
+                        <CheckCircle className="w-3 h-3 text-success" />
                         <span>Politely Pass ("Not right now" · +5 Aura)</span>
                       </button>
 
@@ -576,7 +567,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           onBlockReport(currentDialogueThread.id);
                           setActiveThreadId(null);
                         }}
-                        className="text-[10px] text-slate-500 hover:text-rose-400 flex items-center gap-1"
+                        className="text-[10px] text-subtle hover:text-danger flex items-center gap-1"
                       >
                         <ThumbsDown className="w-3 h-3" />
                         <span>Mute / Report</span>
@@ -591,21 +582,21 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         onChange={(e) => setReplyInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSendReply()}
                         placeholder="Type a respectful reply..."
-                        className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-400"
+                        className="flex-1 px-3.5 py-2.5 rounded-xl bg-white border border-line text-xs text-ink-strong focus:outline-none focus:border-people"
                       />
                       <button
                         onClick={() => {
                           setReplyInput('Up for coffee at Kaph Drury St! My Telegram is @');
                         }}
                         title="Template"
-                        className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-cyan-300"
+                        className="p-2.5 rounded-xl bg-card border border-line text-muted hover:text-people-strong"
                       >
                         <MessageSquareShare className="w-4 h-4" />
                       </button>
                       <button
                         onClick={handleSendReply}
                         disabled={!replyInput.trim()}
-                        className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-bold text-xs disabled:opacity-40 flex items-center gap-1.5"
+                        className="px-4 py-2.5 rounded-xl bg-ink hover:bg-ink-strong text-white font-bold text-xs disabled:opacity-40 flex items-center gap-1.5"
                       >
                         <Send className="w-3.5 h-3.5" />
                         <span>Reply</span>
@@ -616,13 +607,13 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               ) : (
                 /* Sub-Tabs: Received vs Sent */
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 p-1 rounded-xl bg-[#080d1e] border border-slate-800 w-fit">
+                  <div className="flex items-center gap-2 p-1 rounded-xl bg-card border border-line w-fit">
                     <button
                       onClick={() => setRequestsSubTab('received')}
                       className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                         requestsSubTab === 'received'
-                          ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-ink-soft text-ink border border-ink/40 shadow-sm'
+                          : 'text-muted hover:text-ink-strong'
                       }`}
                     >
                       Received ({receivedThreads.length})
@@ -631,8 +622,8 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       onClick={() => setRequestsSubTab('sent')}
                       className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                         requestsSubTab === 'sent'
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-ink-soft text-ink border border-ink/40 shadow-sm'
+                          : 'text-muted hover:text-ink-strong'
                       }`}
                     >
                       Sent ({sentThreads.length})
@@ -649,7 +640,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         return (
                           <div
                             key={thread.id}
-                            className="p-4 rounded-2xl bg-[#0c142e] border border-cyan-500/25 space-y-3 shadow-lg"
+                            className="p-4 rounded-2xl bg-card border border-line space-y-3 shadow-lg"
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex items-center gap-3">
@@ -657,52 +648,52 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                                   <img
                                     src={thread.peerAvatar}
                                     alt={thread.peerName}
-                                    className="w-11 h-11 rounded-full object-cover border border-cyan-400/40"
+                                    className="w-11 h-11 rounded-full object-cover border border-people/40"
                                   />
                                   {isHidden ? (
-                                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-pink-500 text-white flex items-center justify-center text-[9px]">
+                                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-people text-ink-strong flex items-center justify-center text-[9px]">
                                       <Lock className="w-2.5 h-2.5" />
                                     </span>
                                   ) : (
-                                    <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 border-2 border-slate-950" />
+                                    <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-success border-2 border-white" />
                                   )}
                                 </div>
                                 <div>
                                   <div className="flex items-center gap-2">
-                                    <h4 className="text-sm font-bold text-white">{thread.peerName}</h4>
-                                    <span className="text-[10px] text-slate-500 font-mono">
+                                    <h4 className="text-sm font-bold text-ink-strong">{thread.peerName}</h4>
+                                    <span className="text-[10px] text-subtle font-mono">
                                       {thread.deliveredTime}
                                     </span>
                                   </div>
-                                  <p className="text-xs text-cyan-300 font-mono">
+                                  <p className="text-xs text-muted font-mono">
                                     {thread.peerStatus}
                                   </p>
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-mono">
-                                <Clock className="w-3 h-3 text-amber-400" />
+                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-warning-soft border border-warning/30 text-warning text-[10px] font-mono">
+                                <Clock className="w-3 h-3 text-warning" />
                                 <span>~{Math.round(thread.timerSecondsRemaining / 60)}m left</span>
                               </div>
                             </div>
 
                             {/* Intent Message Box */}
-                            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs">
+                            <div className="p-3 rounded-xl bg-white/80 border border-line text-xs">
                               {isHidden ? (
-                                <div className="flex items-center justify-between text-pink-300">
+                                <div className="flex items-center justify-between text-people-strong">
                                   <span className="flex items-center gap-1.5">
                                     <Lock className="w-3.5 h-3.5" />
                                     <span>Protected Intent Message</span>
                                   </span>
                                   <button
                                     onClick={() => handleReveal(thread.id)}
-                                    className="text-[11px] font-bold underline hover:text-pink-200"
+                                    className="text-[11px] font-bold underline hover:text-people-strong"
                                   >
                                     Reveal
                                   </button>
                                 </div>
                               ) : (
-                                <p className="text-slate-200 leading-relaxed">
+                                <p className="text-ink-strong leading-relaxed">
                                   "{thread.fullMessage}"
                                 </p>
                               )}
@@ -712,15 +703,15 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                             <div className="flex items-center justify-between pt-1">
                               <button
                                 onClick={() => onPolitelyDecline(thread.id)}
-                                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white text-xs font-medium flex items-center gap-1"
+                                className="px-3 py-1.5 rounded-xl bg-card border border-line text-muted hover:text-ink-strong text-xs font-medium flex items-center gap-1"
                               >
-                                <CheckCircle className="w-3.5 h-3.5 text-slate-500" />
+                                <CheckCircle className="w-3.5 h-3.5 text-subtle" />
                                 <span>Polite Pass</span>
                               </button>
 
                               <button
                                 onClick={() => setActiveThreadId(thread.id)}
-                                className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-cyan-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-pink-500/20"
+                                className="px-4 py-1.5 rounded-xl bg-ink hover:bg-ink-strong text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-ink/20"
                               >
                                 <Send className="w-3.5 h-3.5" />
                                 <span>Accept & Chat</span>
@@ -731,10 +722,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       })}
 
                       {receivedThreads.length === 0 && (
-                        <div className="p-8 text-center bg-[#0c142e] border border-slate-800 rounded-3xl space-y-2">
-                          <Radio className="w-8 h-8 text-slate-600 mx-auto" />
-                          <h4 className="text-sm font-bold text-white">No Pending Received Signals</h4>
-                          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                        <div className="p-8 text-center bg-card border border-line rounded-3xl space-y-2">
+                          <Radio className="w-8 h-8 text-subtle mx-auto" />
+                          <h4 className="text-sm font-bold text-ink-strong">No Pending Received Signals</h4>
+                          <p className="text-xs text-muted max-w-sm mx-auto">
                             When someone nearby radiates a connection signal to you, it will arrive here with a safe response window.
                           </p>
                         </div>
@@ -748,50 +739,50 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       {sentThreads.map((thread) => (
                         <div
                           key={thread.id}
-                          className="p-4 rounded-2xl bg-[#0c142e] border border-emerald-500/25 space-y-2 shadow-lg"
+                          className="p-4 rounded-2xl bg-card border border-line space-y-2 shadow-lg"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
                               <img
                                 src={thread.peerAvatar}
                                 alt={thread.peerName}
-                                className="w-9 h-9 rounded-full object-cover border border-emerald-400/40"
+                                className="w-9 h-9 rounded-full object-cover border border-people/40"
                               />
                               <div>
-                                <h4 className="text-xs font-bold text-white">{thread.peerName}</h4>
-                                <span className="text-[10px] text-slate-400 font-mono">
+                                <h4 className="text-xs font-bold text-ink-strong">{thread.peerName}</h4>
+                                <span className="text-[10px] text-muted font-mono">
                                   {thread.deliveredTime}
                                 </span>
                               </div>
                             </div>
 
-                            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                              <Zap className="w-3 h-3 text-emerald-400 fill-emerald-400" />
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-people-soft text-people-strong border border-people/30 flex items-center gap-1">
+                              <Zap className="w-3 h-3 text-people-strong fill-people" />
                               <span>Radiated</span>
                             </span>
                           </div>
 
-                          <p className="text-xs text-slate-300 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+                          <p className="text-xs text-muted bg-white/60 p-2.5 rounded-xl border border-line">
                             "{thread.fullMessage}"
                           </p>
 
-                          <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1">
+                          <div className="flex items-center justify-between text-[10px] text-subtle pt-1">
                             <span>Awaiting polite Dublin reaction</span>
-                            <span className="font-mono text-cyan-400">2h safe window active</span>
+                            <span className="font-mono text-success">2h safe window active</span>
                           </div>
                         </div>
                       ))}
 
                       {sentThreads.length === 0 && (
-                        <div className="p-8 text-center bg-[#0c142e] border border-slate-800 rounded-3xl space-y-2">
-                          <Zap className="w-8 h-8 text-slate-600 mx-auto" />
-                          <h4 className="text-sm font-bold text-white">No Signals Sent Yet Today</h4>
-                          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                        <div className="p-8 text-center bg-card border border-line rounded-3xl space-y-2">
+                          <Zap className="w-8 h-8 text-subtle mx-auto" />
+                          <h4 className="text-sm font-bold text-ink-strong">No Signals Sent Yet Today</h4>
+                          <p className="text-xs text-muted max-w-sm mx-auto">
                             Switch to the Resonance tab to explore like-minded people and radiate your first signal!
                           </p>
                           <button
                             onClick={() => setActiveMainTab('resonance')}
-                            className="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 text-xs font-bold shadow-md shadow-emerald-500/20"
+                            className="px-4 py-2 rounded-xl bg-people text-ink-strong text-xs font-bold shadow-md shadow-people/20"
                           >
                             Explore Resonance Radar
                           </button>
@@ -808,30 +799,30 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
       {/* QUICK CONTEXT NOTE MODAL (WHEN RADIATING A SIGNAL FROM RESONANCE) */}
       {signalingUser && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-md bg-[#0a0f24] border border-emerald-500/40 rounded-3xl p-5 space-y-4 shadow-2xl">
+        <div className="absolute inset-0 z-60 flex items-center justify-center p-3 bg-ink-strong/40 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-md bg-white border border-line rounded-3xl p-5 space-y-4 shadow-2xl max-h-full overflow-y-auto no-scrollbar">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <img
                   src={signalingUser.avatarUrl}
                   alt={signalingUser.name}
-                  className="w-10 h-10 rounded-full object-cover border border-emerald-400/50"
+                  className="w-10 h-10 rounded-full object-cover border border-people/50"
                 />
                 <div>
-                  <h4 className="text-sm font-bold text-white">{signalingUser.name}</h4>
-                  <p className="text-xs text-emerald-400 font-mono">{signalingUser.district}</p>
+                  <h4 className="text-sm font-bold text-ink-strong">{signalingUser.name}</h4>
+                  <p className="text-xs text-muted font-mono">{signalingUser.district}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSignalingUser(null)}
-                className="w-7 h-7 rounded-full bg-slate-900 text-slate-400 hover:text-white flex items-center justify-center"
+                className="w-7 h-7 rounded-full bg-card text-muted hover:text-ink-strong flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-2">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+              <span className="text-[11px] font-semibold text-muted uppercase tracking-wider block">
                 Select Respectful Signal Context
               </span>
               {[
@@ -844,8 +835,8 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                   onClick={() => setPresetNote(note)}
                   className={`w-full p-2.5 rounded-xl text-left text-xs border transition-colors ${
                     presetNote === note
-                      ? 'bg-emerald-500/20 border-emerald-400 text-emerald-200 font-medium'
-                      : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                      ? 'bg-people-soft border-people text-people-strong font-medium'
+                      : 'bg-card border-line text-muted hover:text-ink-strong'
                   }`}
                 >
                   {note}
@@ -853,15 +844,15 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               ))}
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 space-y-1">
-              <div className="flex items-center justify-between text-slate-300 font-medium">
-                <span className="flex items-center gap-1.5 text-emerald-400">
+            <div className="p-3 rounded-xl bg-white border border-line text-[11px] text-muted space-y-1">
+              <div className="flex items-center justify-between text-muted font-medium">
+                <span className="flex items-center gap-1.5 text-people-strong">
                   <Shield className="w-3.5 h-3.5" />
                   Intentional Signal Protection
                 </span>
-                <span className="font-mono text-cyan-400">{dailySignalsRemaining} / 10 left</span>
+                <span className="font-mono text-people-strong">{dailySignalsRemaining} / 10 left</span>
               </div>
-              <p className="text-[10px] text-slate-500">
+              <p className="text-[10px] text-subtle">
                 Radiating a signal rewards +10 Aura points and opens a gentle, spam-free 2-hour window.
               </p>
             </div>
@@ -869,22 +860,22 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
             <div className="flex items-center justify-end gap-2 pt-1">
               <button
                 onClick={() => setSignalingUser(null)}
-                className="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white"
+                className="px-4 py-2 rounded-xl text-xs text-muted hover:text-ink-strong"
               >
                 Cancel
               </button>
 
               {signalSuccessMsg ? (
-                <div className="px-5 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-lg">
+                <div className="px-5 py-2 rounded-xl bg-success text-white font-bold text-xs flex items-center gap-1.5 shadow-lg">
                   <Check className="w-4 h-4" />
                   <span>{signalSuccessMsg}</span>
                 </div>
               ) : (
                 <button
                   onClick={handleConfirmSignal}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-500/20"
+                  className="px-5 py-2 rounded-xl bg-people text-ink-strong font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-people/20"
                 >
-                  <Zap className="w-4 h-4 fill-slate-950" />
+                  <Zap className="w-4 h-4 fill-ink-strong" />
                   <span>Radiate Signal (+10 Aura)</span>
                 </button>
               )}

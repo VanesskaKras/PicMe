@@ -36,11 +36,11 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
   if (!place && !opportunity) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 p-3 sm:p-6 flex justify-center pointer-events-none">
-      <div className="w-full max-w-lg bg-[#0a0f24]/95 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl overflow-hidden pointer-events-auto animate-slide-up">
+    <div className="absolute inset-x-0 bottom-0 z-30 flex justify-center pointer-events-none">
+      <div className="w-full max-h-[85%] overflow-y-auto no-scrollbar bg-white border-t border-line rounded-t-3xl shadow-[0_-8px_30px_rgba(31,42,16,0.18)] pointer-events-auto slide-up-in">
         {/* DRAG HANDLE */}
         <div className="pt-3 pb-1 flex justify-center">
-          <div className="w-10 h-1 bg-slate-700 rounded-full" />
+          <div className="w-10 h-1 bg-line rounded-full" />
         </div>
 
         {/* PLACE DETAIL */}
@@ -48,15 +48,15 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
           <div className="p-5 pt-2 space-y-4">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+                <div className="w-12 h-12 rounded-2xl bg-place-soft border border-place/40 text-place-strong flex items-center justify-center shadow-sm">
                   <GraphicIcon nameOrEmoji={place.category} size="md" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white tracking-tight">{place.name}</h3>
-                  <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                    <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+                  <h3 className="text-base font-bold text-ink-strong tracking-tight">{place.name}</h3>
+                  <p className="text-xs text-muted flex items-center gap-1 mt-0.5">
+                    <MapPin className="w-3.5 h-3.5 text-place-strong" />
                     <span>{place.district}</span>
-                    <span className="text-slate-600">·</span>
+                    <span className="text-subtle">·</span>
                     <span>{place.address}</span>
                   </p>
                 </div>
@@ -64,31 +64,31 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
 
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white"
+                className="w-8 h-8 rounded-full bg-card border border-line flex items-center justify-center text-muted hover:text-ink-strong"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Live Context Banner */}
-            <div className="p-3.5 rounded-2xl bg-[#0e1738] border border-cyan-500/30 space-y-1.5">
+            <div className="p-3.5 rounded-2xl bg-card border border-place/30 space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-cyan-300 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="text-xs font-semibold text-place-strong flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-place-strong" />
                   Live Urban Pulse
                 </span>
                 {place.isQuietHour && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-place-soft text-place-strong border border-place/40">
                     Quiet Focus Hour
                   </span>
                 )}
                 {place.hasLiveEvent && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-pink-500/20 text-pink-300 border border-pink-500/40 animate-pulse">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-people-soft text-people-strong border border-people/40 animate-pulse">
                     Live Event {place.eventTime}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed">{place.liveContext}</p>
+              <p className="text-xs text-muted leading-relaxed">{place.liveContext}</p>
             </div>
 
             {/* Place Tags */}
@@ -96,13 +96,13 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
               {place.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-900 text-slate-300 border border-slate-800"
+                  className="px-2.5 py-1 rounded-lg text-xs font-medium bg-card text-muted border border-line"
                 >
                   {tag}
                 </span>
               ))}
-              <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold text-success bg-success-soft border border-success/30 flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-success" />
                 {place.auraScore} Aura Trust
               </span>
             </div>
@@ -111,14 +111,14 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
             <div className="pt-2 flex items-center gap-2">
               <button
                 onClick={() => onAction?.(`Viewing walking route to ${place.name}`)}
-                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-cyan-500/20 hover:opacity-95"
+                className="flex-1 py-2.5 rounded-xl bg-place text-ink-strong font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-place/20 hover:opacity-95"
               >
                 <Navigation className="w-3.5 h-3.5" />
                 Navigate in Dublin
               </button>
               <button
                 onClick={() => onBookmark?.(place.name)}
-                className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center"
+                className="px-3.5 py-2.5 rounded-xl bg-card border border-line text-muted hover:text-ink-strong flex items-center justify-center"
                 title="Bookmark Place"
               >
                 <Bookmark className="w-4 h-4" />
@@ -132,20 +132,20 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
           <div className="p-5 pt-2 space-y-4">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                <div className="w-12 h-12 rounded-2xl bg-opp-soft border border-opp/40 text-opp-strong flex items-center justify-center shadow-sm">
                   <GraphicIcon nameOrEmoji={opportunity.type} size="md" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-bold">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-opp-strong font-bold">
                       {opportunity.categoryTag}
                     </span>
-                    <span className="text-[10px] text-slate-500">·</span>
-                    <span className="text-[10px] text-amber-400 font-mono">
+                    <span className="text-[10px] text-subtle">·</span>
+                    <span className="text-[10px] text-warning font-mono">
                       Expires in {opportunity.expiresInDays}d
                     </span>
                   </div>
-                  <h3 className="text-base font-bold text-white tracking-tight leading-snug">
+                  <h3 className="text-base font-bold text-ink-strong tracking-tight leading-snug">
                     {opportunity.title}
                   </h3>
                 </div>
@@ -153,38 +153,38 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
 
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white"
+                className="w-8 h-8 rounded-full bg-card border border-line flex items-center justify-center text-muted hover:text-ink-strong"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Price & Location Banner */}
-            <div className="p-3 rounded-2xl bg-[#08151f] border border-emerald-500/30 flex items-center justify-between">
+            <div className="p-3 rounded-2xl bg-card border border-opp/30 flex items-center justify-between">
               <div>
-                <span className="text-[10px] text-slate-400 block">Rate / Price</span>
-                <span className="text-base font-bold font-mono text-emerald-300">
+                <span className="text-[10px] text-muted block">Rate / Price</span>
+                <span className="text-base font-bold font-mono text-opp-strong">
                   {opportunity.rateOrPrice}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-slate-400 block">Dublin Location</span>
-                <span className="text-xs font-semibold text-slate-200">
+                <span className="text-[10px] text-muted block">Dublin Location</span>
+                <span className="text-xs font-semibold text-ink-strong">
                   {opportunity.district}
                 </span>
               </div>
             </div>
 
             {/* Description */}
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-muted leading-relaxed">
               {opportunity.description}
             </p>
 
             {/* Organizer & Trust */}
-            <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
-              <span className="text-slate-400">Listed by <strong className="text-slate-200">{opportunity.organizer}</strong></span>
+            <div className="p-2.5 rounded-xl bg-card/60 border border-line flex items-center justify-between text-xs">
+              <span className="text-muted">Listed by <strong className="text-ink-strong">{opportunity.organizer}</strong></span>
               {opportunity.verifiedByAura && (
-                <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-400">
+                <span className="flex items-center gap-1 text-[11px] font-medium text-success">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   Aura Verified
                 </span>
@@ -195,14 +195,14 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
             <div className="pt-2 flex items-center gap-2">
               <button
                 onClick={() => onAction?.(`Signal sent for ${opportunity.title}`)}
-                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 hover:opacity-95"
+                className="flex-1 py-2.5 rounded-xl bg-opp text-ink-strong font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-opp/20 hover:opacity-95"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 {opportunity.type === 'housing' ? 'Contact Resident / Landlord' : opportunity.type === 'job' ? 'Apply via Dublin Network' : 'Join Activity Circle'}
               </button>
               <button
                 onClick={() => onBookmark?.(opportunity.title)}
-                className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center"
+                className="px-3.5 py-2.5 rounded-xl bg-card border border-line text-muted hover:text-ink-strong flex items-center justify-center"
                 title="Save Opportunity"
               >
                 <Bookmark className="w-4 h-4" />

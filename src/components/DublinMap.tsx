@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { DublinPlace, DublinOpportunity, NearbyDublinUser, VisibilityLevel } from '../types';
 import { getGraphicSvgString } from './GraphicIcon';
+import { COLORS } from '../theme';
 
 interface DublinMapProps {
   center: { lat: number; lng: number };
@@ -62,8 +63,8 @@ export const DublinMap: React.FC<DublinMapProps> = ({
         attributionControl: false,
       });
 
-      // CartoDB Dark Matter tiles (seamless dark navy aesthetic)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      // CartoDB Positron tiles (light), tinted green via .leaflet-tile in index.css
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
         subdomains: 'abcd',
       }).addTo(map);
@@ -105,11 +106,9 @@ export const DublinMap: React.FC<DublinMapProps> = ({
         className: 'custom-my-location-marker',
         html: `
           <div class="relative flex items-center justify-center">
-            <div class="absolute w-12 h-12 rounded-full bg-cyan-500/20 border border-cyan-400/40 animate-ping"></div>
-            <div class="relative w-7 h-7 rounded-full bg-slate-900 border-2 border-cyan-400 flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.6)]">
-              <div class="w-2.5 h-2.5 rounded-full bg-cyan-400"></div>
-            </div>
-            <span class="absolute -bottom-5 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-950/90 text-cyan-300 border border-cyan-500/30 whitespace-nowrap shadow-md">
+            <div class="absolute w-12 h-12 rounded-full bg-ink/15 animate-ping"></div>
+            <div class="relative w-5 h-5 rounded-full bg-ink border-[3px] border-white shadow-md"></div>
+            <span class="absolute -bottom-5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white text-ink whitespace-nowrap shadow-md">
               You (${myVisibility})
             </span>
           </div>
@@ -125,10 +124,10 @@ export const DublinMap: React.FC<DublinMapProps> = ({
       if (myVisibility === 'zone') {
         const zoneCircle = L.circle([myLocation.lat, myLocation.lng], {
           radius: 400,
-          color: '#00f0ff',
+          color: COLORS.ink, // the viewer's own privacy zone
           weight: 1,
           dashArray: '4, 8',
-          fillColor: '#00f0ff',
+          fillColor: COLORS.ink,
           fillOpacity: 0.08,
         });
         markersGroup.addLayer(zoneCircle);
@@ -153,29 +152,29 @@ export const DublinMap: React.FC<DublinMapProps> = ({
         if (user.visibility === 'zone') {
           const privacyCircle = L.circle([user.lat, user.lng], {
             radius: 350,
-            color: '#ff2a85',
+            color: COLORS.people,
             weight: 1,
-            fillColor: '#ff2a85',
+            fillColor: COLORS.people,
             fillOpacity: 0.06,
           });
           markersGroup.addLayer(privacyCircle);
         }
 
         const moodBadgeSvg = getGraphicSvgString(user.mood ? user.mood.emoji : '✨', 14);
-        const ringColor = isSelected ? 'border-[#ff2a85] ring-4 ring-[#ff2a85]/40 scale-110' : 'border-pink-500/70';
+        const ringColor = isSelected ? 'ring-2 ring-ink scale-110' : 'ring-2 ring-white';
 
         const personIcon = L.divIcon({
           className: 'custom-person-marker',
           html: `
             <div class="relative group cursor-pointer transition-transform duration-200">
-              <div class="relative w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr from-pink-500 via-cyan-400 to-emerald-400 shadow-[0_0_15px_rgba(255,42,133,0.45)]">
-                <img src="${user.avatarUrl}" alt="${user.name}" class="w-full h-full object-cover rounded-full bg-slate-900 border ${ringColor}" />
-                <span class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-slate-950 border border-pink-400 flex items-center justify-center shadow">
+              <div class="relative w-11 h-11 rounded-full p-[3px] bg-people shadow-md ${ringColor}">
+                <img src="${user.avatarUrl}" alt="${user.name}" class="w-full h-full object-cover rounded-full bg-card" />
+                <span class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-people text-ink border-2 border-white flex items-center justify-center shadow">
                   ${moodBadgeSvg}
                 </span>
               </div>
-              <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-slate-950/90 border border-slate-800 text-[10px] font-medium text-slate-200 whitespace-nowrap shadow-md flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+              <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-full bg-white text-[10px] font-semibold text-ink whitespace-nowrap shadow-md flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-people"></span>
                 <span>${user.name.split(' ')[0]}</span>
               </div>
             </div>
@@ -207,7 +206,7 @@ export const DublinMap: React.FC<DublinMapProps> = ({
         }
 
         const isSelected = selectedPlace?.id === place.id;
-        const placeRing = isSelected ? 'border-[#00f0ff] ring-4 ring-[#00f0ff]/40 scale-110' : 'border-cyan-400/80';
+        const placeRing = isSelected ? 'border-ink scale-110' : 'border-white';
 
         const placeSvg = getGraphicSvgString(place.category, 18);
 
@@ -215,11 +214,11 @@ export const DublinMap: React.FC<DublinMapProps> = ({
           className: 'custom-place-marker',
           html: `
             <div class="relative group cursor-pointer transition-transform duration-200">
-              <div class="w-9 h-9 rounded-xl bg-slate-900/95 border ${placeRing} flex items-center justify-center text-sm shadow-[0_0_16px_rgba(0,240,255,0.4)]">
+              <div class="w-9 h-9 rounded-xl bg-place text-ink-strong border-2 ${placeRing} flex items-center justify-center text-sm shadow-md">
                 ${placeSvg}
-                ${place.hasLiveEvent ? '<span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-pink-500 ring-2 ring-slate-950 animate-pulse"></span>' : ''}
+                ${place.hasLiveEvent ? '<span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-people ring-2 ring-white animate-pulse"></span>' : ''}
               </div>
-              <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-slate-950/90 border border-cyan-900/60 text-[10px] font-medium text-cyan-200 whitespace-nowrap shadow-md">
+              <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-full bg-white text-[10px] font-semibold text-ink whitespace-nowrap shadow-md">
                 ${place.name.length > 14 ? place.name.slice(0, 13) + '…' : place.name}
               </div>
             </div>
@@ -251,7 +250,7 @@ export const DublinMap: React.FC<DublinMapProps> = ({
         }
 
         const isSelected = selectedOpportunity?.id === opp.id;
-        const ring = isSelected ? 'border-[#10b981] ring-4 ring-[#10b981]/40 scale-110' : 'border-emerald-400/80';
+        const ring = isSelected ? 'border-ink scale-110' : 'border-white';
 
         const oppSvg = getGraphicSvgString(opp.type, 18);
 
@@ -259,11 +258,10 @@ export const DublinMap: React.FC<DublinMapProps> = ({
           className: 'custom-opp-marker',
           html: `
             <div class="relative group cursor-pointer transition-transform duration-200">
-              <div class="w-9 h-9 rounded-xl bg-slate-900/95 border ${ring} flex items-center justify-center text-sm shadow-[0_0_16px_rgba(16,185,129,0.4)]">
+              <div class="w-9 h-9 rounded-full bg-opp text-ink border-2 ${ring} flex items-center justify-center text-sm shadow-md">
                 ${oppSvg}
-                <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-950"></span>
               </div>
-              <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-slate-950/95 border border-emerald-900/60 text-[9px] font-semibold text-emerald-300 whitespace-nowrap shadow-md">
+              <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-full bg-white text-[9px] font-bold text-ink whitespace-nowrap shadow-md">
                 ${opp.rateOrPrice.split(' ')[0]}
               </div>
             </div>
@@ -298,7 +296,7 @@ export const DublinMap: React.FC<DublinMapProps> = ({
   ]);
 
   return (
-    <div className="relative w-full h-full bg-[#070b19] overflow-hidden select-none">
+    <div className="relative w-full h-full bg-canvas overflow-hidden select-none">
       <div ref={mapContainerRef} className="w-full h-full z-0" />
     </div>
   );

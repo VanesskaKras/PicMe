@@ -1,355 +1,683 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  X,
-  ShieldCheck,
-  MapPin,
-  Sparkles,
-  Check,
-  Radio,
+  Award,
+  Bell,
+  Briefcase,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   Eye,
-  Sliders,
-  Award
+  EyeOff,
+  Layers,
+  LogOut,
+  MapPin,
+  Megaphone,
+  Pencil,
+  Radio,
+  Settings,
+  Trash2,
+  User,
+  UserX,
+  X,
 } from 'lucide-react';
-import { UserProfile, VisibilityLevel, AuraLog } from '../types';
+import { UserProfile, VisibilityLevel, DublinPlace, DublinOpportunity } from '../types';
 import { GraphicIcon } from './GraphicIcon';
+
+export interface BlockedPerson {
+  id: string;
+  name: string;
+  avatar: string;
+}
+
+export interface ProfileSettings {
+  notifications: { signals: boolean; moodExpiring: boolean; opportunitiesNearby: boolean };
+  defaultLayers: { people: boolean; places: boolean; opportunities: boolean };
+}
+
+export const DEFAULT_PROFILE_SETTINGS: ProfileSettings = {
+  notifications: { signals: true, moodExpiring: true, opportunitiesNearby: false },
+  defaultLayers: { people: true, places: true, opportunities: true },
+};
+
+export function loadProfileSettings(): ProfileSettings {
+  try {
+    const saved = JSON.parse(localStorage.getItem('picme_settings') || 'null');
+    if (saved) {
+      return {
+        notifications: { ...DEFAULT_PROFILE_SETTINGS.notifications, ...saved.notifications },
+        defaultLayers: { ...DEFAULT_PROFILE_SETTINGS.defaultLayers, ...saved.defaultLayers },
+      };
+    }
+  } catch (e) {
+    // fall through to defaults
+  }
+  return DEFAULT_PROFILE_SETTINGS;
+}
 
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: UserProfile;
-  auraLogs?: AuraLog[];
+  places: DublinPlace[];
+  opportunities: DublinOpportunity[];
+  blockedPeople: BlockedPerson[];
   onUpdateVisibility: (level: VisibilityLevel) => void;
   onOpenOnboardingEdit: () => void;
   onOpenAura: () => void;
+  onExtendMood: () => void;
+  onChangeMood: () => void;
+  onShowPlace: (place: DublinPlace) => void;
+  onShowOpportunity: (opp: DublinOpportunity) => void;
+  onUnblock: (id: string) => void;
+  onLogout: () => void;
+  onDeleteAccount: () => void;
 }
+
+const VISIBILITY_OPTIONS: { level: VisibilityLevel; label: string }[] = [
+  { level: 'exact', label: 'Point' },
+  { level: 'zone', label: 'Zone' },
+  { level: 'district', label: 'District' },
+  { level: 'invisible', label: 'Invisible' },
+];
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function formatTimeLeft(ms: number): string {
+  if (ms <= 0) return 'expired';
+  const mins = Math.ceil(ms / 60000);
+  if (mins < 60) return `${mins} min left`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} h ${mins % 60 ? `${mins % 60} min ` : ''}left`;
+  return `${Math.ceil(ms / DAY_MS)} d left`;
+}
+
+// Filled = active right now, outlined = permanent / background
+const chipOutline = 'px-3 py-1 rounded-full text-xs font-medium bg-white border';
+const chipFilled = 'px-3 py-1 rounded-full text-xs font-semibold';
+const btnBase = 'rounded-full font-semibold text-xs transition-colors';
+
+const SectionTitle: React.FC<{ children: React.ReactNode; action?: React.ReactNode }> = ({ children, action }) => (
+  <div className="flex items-center justify-between mb-2">
+    <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted">{children}</h4>
+    {action}
+  </div>
+);
+
+const Toggle: React.FC<{ checked: boolean; onChange: (v: boolean) => void; label: string }> = ({ checked, onChange, label }) => (
+  <button
+    role="switch"
+    aria-checked={checked}
+    aria-label={label}
+    onClick={() => onChange(!checked)}
+    className={`relative w-10 h-6 rounded-full transition-colors shrink-0 ${checked ? 'bg-ink' : 'bg-line'}`}
+  >
+    <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${checked ? 'left-[18px]' : 'left-0.5'}`} />
+  </button>
+);
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
   isOpen,
-  onClose,
   user,
-  auraLogs,
+  places,
+  opportunities,
+  blockedPeople,
   onUpdateVisibility,
   onOpenOnboardingEdit,
   onOpenAura,
+  onExtendMood,
+  onChangeMood,
+  onShowPlace,
+  onShowOpportunity,
+  onUnblock,
+  onLogout,
+  onDeleteAccount,
 }) => {
+  const [view, setView] = useState<'profile' | 'settings'>('profile');
+  const [dialog, setDialog] = useState<null | 'preview' | 'logout' | 'delete'>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [settings, setSettings] = useState<ProfileSettings>(loadProfileSettings);
+  const [now, setNow] = useState(Date.now());
+
+  // Keep mood / fade timers fresh
+  useEffect(() => {
+    if (!isOpen) return;
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(t);
+  }, [isOpen]);
+
+  // Always land on the profile itself when the tab is reopened
+  useEffect(() => {
+    if (!isOpen) {
+      setView('profile');
+      setDialog(null);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  // Level & milestone calculations
-  const getLevelInfo = (score: number) => {
-    if (score < 180) {
-      return {
-        levelName: 'Reliable Citizen',
-        nextLevelPts: Math.max(0, 180 - score),
-        progressPercent: Math.min(100, Math.max(12, (score / 180) * 100)),
-      };
-    } else if (score < 300) {
-      return {
-        levelName: 'Trusted Resident',
-        nextLevelPts: Math.max(0, 300 - score),
-        progressPercent: Math.min(100, (score / 300) * 100),
-      };
-    } else {
-      return {
-        levelName: 'Map Moderator',
-        nextLevelPts: 0,
-        progressPercent: 100,
-      };
+  const updateSettings = (next: ProfileSettings) => {
+    setSettings(next);
+    try {
+      localStorage.setItem('picme_settings', JSON.stringify(next));
+    } catch (e) {
+      // settings still apply for this session
     }
   };
 
-  const levelInfo = getLevelInfo(user.auraScore);
+  const visibilityLabel = VISIBILITY_OPTIONS.find((o) => o.level === user.visibility)?.label ?? 'Zone';
+  const signalsLeft = user.dailySignalsLimit - user.dailySignalsUsed;
+  const moodMsLeft = user.mood ? user.mood.expiresAt - now : 0;
+  const moodActive = !!user.mood && moodMsLeft > 0;
 
-  const defaultActions = [
-    { text: 'Added new place: Specialty Cafe Kaph...', delta: '+15' },
-    { text: 'Timely response to signal request (prompt reply)...', delta: '+10' },
-    { text: 'Mutual connection confirmed in real life...', delta: '+10' },
-  ];
+  // What I've put on the map myself and is still live
+  const myOpps = opportunities
+    .filter((o) => o.createdByMe)
+    .map((o) => ({ opp: o, msLeft: (o.createdAt ?? now) + o.expiresInDays * DAY_MS - now }))
+    .filter((o) => o.msLeft > 0);
+  const myAnnouncements = myOpps.filter((o) => o.opp.type !== 'activity');
+  const myEvents = myOpps.filter((o) => o.opp.type === 'activity');
+  const myPlaces = places.filter((p) => p.createdByMe);
+  const myPlaceEvents = myPlaces.filter((p) => p.hasLiveEvent);
+  const presenceCount = myAnnouncements.length + myEvents.length + myPlaces.length;
 
-  const recentActions = (auraLogs && auraLogs.length > 0)
-    ? auraLogs.slice(0, 3).map((log) => ({
-        text: log.action.length > 46 ? `${log.action.slice(0, 43)}...` : log.action,
-        delta: log.delta > 0 ? `+${log.delta}` : `${log.delta}`,
-      }))
-    : defaultActions;
+  const distanceLine: Record<VisibilityLevel, string> = {
+    exact: `≈ 120 m away · exact spot`,
+    zone: `Within a 500 m zone in ${user.district}`,
+    district: `Somewhere in ${user.district}`,
+    invisible: '',
+  };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-lg bg-[#0a0f24] border border-cyan-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Header */}
-        <div className="relative p-6 pb-4 bg-gradient-to-b from-[#101b44] to-[#0a0f24] border-b border-slate-800">
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white"
-          >
-            <X className="w-4 h-4" />
-          </button>
+  // ───────────────────────── SETTINGS VIEW ─────────────────────────
+  const settingsView = (
+    <div className="flex-1 min-h-0 flex flex-col">
+      <div className="px-4 py-3 border-b border-line flex items-center gap-2 shrink-0">
+        <button
+          onClick={() => setView('profile')}
+          className="w-9 h-9 rounded-full bg-card flex items-center justify-center text-ink-strong"
+          aria-label="Back to profile"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <h3 className="text-base font-bold text-ink-strong">Settings</h3>
+      </div>
 
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-cyan-400 via-pink-500 to-emerald-400 shadow-[0_0_20px_rgba(0,240,255,0.4)]">
-                <img
-                  src={user.avatarUrl}
-                  alt={user.name}
-                  className="w-full h-full object-cover rounded-full bg-slate-900"
+      <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5">
+        {/* Account */}
+        <section>
+          <SectionTitle>Account</SectionTitle>
+          <div className="rounded-3xl bg-card border border-line divide-y divide-line">
+            <div className="px-4 py-3 flex items-center gap-3">
+              <User className="w-4 h-4 text-muted" />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold text-ink-strong truncate">{user.name}</div>
+                <div className="text-[11px] text-muted truncate">{user.handle}</div>
+              </div>
+            </div>
+            <button onClick={onOpenOnboardingEdit} className="w-full px-4 py-3 flex items-center gap-3 text-left">
+              <Pencil className="w-4 h-4 text-muted" />
+              <span className="flex-1 text-sm text-ink-strong">Edit profile & tags</span>
+              <ChevronRight className="w-4 h-4 text-muted" />
+            </button>
+          </div>
+        </section>
+
+        {/* Notifications */}
+        <section>
+          <SectionTitle>Notifications</SectionTitle>
+          <div className="rounded-3xl bg-card border border-line divide-y divide-line">
+            {([
+              ['signals', 'New signals & replies'],
+              ['moodExpiring', 'Mood about to expire'],
+              ['opportunitiesNearby', 'New opportunities nearby'],
+            ] as const).map(([key, label]) => (
+              <div key={key} className="px-4 py-3 flex items-center gap-3">
+                <Bell className="w-4 h-4 text-muted" />
+                <span className="flex-1 text-sm text-ink-strong">{label}</span>
+                <Toggle
+                  label={label}
+                  checked={settings.notifications[key]}
+                  onChange={(v) => updateSettings({ ...settings, notifications: { ...settings.notifications, [key]: v } })}
                 />
               </div>
-              {user.mood && (
-                <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-slate-950 border border-pink-400 flex items-center justify-center shadow-md">
-                  <GraphicIcon nameOrEmoji={user.mood.emoji} size="xs" />
-                </span>
-              )}
-            </div>
-
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-white tracking-tight">{user.name}</h3>
-                <span className="text-xs text-cyan-400 font-mono">{user.handle}</span>
-              </div>
-              <p className="text-xs text-slate-300 mt-0.5">
-                {user.identity} · {user.activity}
-              </p>
-              <div className="flex items-center gap-2 mt-1.5">
-                <button
-                  onClick={onOpenAura}
-                  className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/30 transition-colors flex items-center gap-1"
-                >
-                  <Award className="w-3.5 h-3.5 text-cyan-400" />
-                  {user.auraScore} Aura
-                </button>
-                <span className="text-xs text-slate-500">·</span>
-                <span className="text-[11px] font-mono text-emerald-400">
-                  {user.dailySignalsLimit - user.dailySignalsUsed} signals left
-                </span>
-              </div>
-            </div>
+            ))}
           </div>
-        </div>
+        </section>
 
-        {/* Content */}
-        <div className="p-6 overflow-y-auto space-y-5 flex-1">
-          {/* Current Status & Mood Highlight */}
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="p-3 rounded-2xl bg-[#0c142e] border border-cyan-500/20">
-              <span className="text-[10px] text-slate-500 block mb-0.5">Character / Status</span>
-              <span className="font-semibold text-cyan-300 truncate block">{user.status}</span>
-            </div>
-            <div className="p-3 rounded-2xl bg-[#141028] border border-pink-500/20">
-              <span className="text-[10px] text-slate-500 block mb-0.5">Active Mood</span>
-              <span className="font-semibold text-pink-300 truncate flex items-center gap-1.5">
-                {user.mood ? (
-                  <>
-                    <GraphicIcon nameOrEmoji={user.mood.emoji} size="xs" />
-                    <span className="truncate">{user.mood.text}</span>
-                  </>
-                ) : (
-                  'No active mood'
-                )}
-              </span>
-            </div>
-          </div>
-
-          {/* AURA OF TRUST & CONTRIBUTION CARD (FAITHFUL TO USER SPECIFICATION) */}
-          <div className="p-4 sm:p-5 rounded-3xl bg-[#080e22] border border-slate-800/90 shadow-2xl relative overflow-hidden space-y-4">
-            {/* Subtle emerald ambient aura glow */}
-            <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Top row: Title, Subtitle and Big Score */}
-            <div className="flex items-start justify-between gap-3 relative z-10">
-              <div className="flex items-start gap-2.5">
-                <div className="mt-0.5 text-emerald-400 shrink-0">
-                  <svg
-                    className="w-5 h-5 text-emerald-400"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="8" r="6" />
-                    <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="text-sm sm:text-base font-bold text-white tracking-tight leading-snug">
-                    Aura of Trust & Contribution
-                  </h4>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    Objective meter of deeds, not likes
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-right shrink-0">
-                <div className="text-2xl sm:text-3xl font-extrabold font-mono text-emerald-400 leading-none">
-                  {user.auraScore}
-                </div>
-                <div className="text-[10px] sm:text-[11px] text-slate-400 mt-1 font-medium">
-                  reputation points
-                </div>
-              </div>
-            </div>
-
-            {/* Level and Next level row */}
-            <div className="space-y-2 relative z-10">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-300">
-                  Level: <strong className="text-white font-bold">{levelInfo.levelName}</strong>
-                </span>
-                <span className="text-slate-400 text-[11px] font-mono">
-                  Next level: {levelInfo.nextLevelPts} pts
-                </span>
-              </div>
-
-              {/* Progress bar */}
-              <div className="w-full h-2 bg-slate-800/90 rounded-full overflow-hidden p-[1px]">
-                <div
-                  className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.6)] transition-all duration-500"
-                  style={{ width: `${levelInfo.progressPercent}%` }}
+        {/* Default map layers */}
+        <section>
+          <SectionTitle>Default map layers</SectionTitle>
+          <div className="rounded-3xl bg-card border border-line divide-y divide-line">
+            {([
+              ['people', 'People', 'bg-people'],
+              ['places', 'Places', 'bg-place'],
+              ['opportunities', 'Opportunities', 'bg-opp'],
+            ] as const).map(([key, label, dot]) => (
+              <div key={key} className="px-4 py-3 flex items-center gap-3">
+                <Layers className="w-4 h-4 text-muted" />
+                <span className={`w-2 h-2 rounded-full ${dot}`} />
+                <span className="flex-1 text-sm text-ink-strong">{label}</span>
+                <Toggle
+                  label={label}
+                  checked={settings.defaultLayers[key]}
+                  onChange={(v) => updateSettings({ ...settings, defaultLayers: { ...settings.defaultLayers, [key]: v } })}
                 />
               </div>
-
-              {/* Moderator unlock milestone notice */}
-              <div className="text-[11px] text-slate-300 flex items-center gap-1.5 pt-0.5">
-                <Award className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span>Reach 300 points to unlock Map Moderator status.</span>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-slate-800/80 my-1" />
-
-            {/* Recent Actions Section */}
-            <div className="space-y-2 relative z-10">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                RECENT ACTIONS THAT CHANGED AURA:
-              </span>
-
-              <div className="space-y-1.5">
-                {recentActions.map((action, idx) => (
-                  <div
-                    key={idx}
-                    className="px-3.5 py-2.5 rounded-2xl bg-[#070b19] border border-slate-800/80 flex items-center justify-between gap-3 text-xs"
-                  >
-                    <span className="text-slate-200 truncate font-medium text-[11px] sm:text-xs">
-                      {action.text}
-                    </span>
-                    <span className="font-mono font-bold text-emerald-400 text-xs shrink-0">
-                      {action.delta}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
+          <p className="text-[11px] text-muted mt-1.5 px-1">Applied the next time you open the map.</p>
+        </section>
 
-          {/* 5 Category Summary */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Dublin Profile Context
-              </span>
-              <button
-                onClick={onOpenOnboardingEdit}
-                className="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-medium"
-              >
-                <Sliders className="w-3 h-3" />
-                Edit Categories
-              </button>
-            </div>
-
-            {/* Interests */}
-            <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5">
-              <span className="text-[11px] text-slate-400 font-semibold block">Interests & Fuel</span>
-              <div className="flex flex-wrap gap-1.5">
-                {user.interests.map((i) => (
-                  <span
-                    key={i}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-pink-500/15 text-pink-300 border border-pink-500/30"
-                  >
-                    {i}
-                  </span>
-                ))}
+        {/* Blocked people */}
+        <section>
+          <SectionTitle>Blocked people</SectionTitle>
+          <div className="rounded-3xl bg-card border border-line divide-y divide-line">
+            {blockedPeople.length === 0 ? (
+              <div className="px-4 py-4 flex items-center gap-3 text-sm text-muted">
+                <UserX className="w-4 h-4" />
+                Nobody blocked
               </div>
-            </div>
-
-            {/* Seeking */}
-            <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5">
-              <span className="text-[11px] text-slate-400 font-semibold block">Seeking in Dublin</span>
-              <div className="flex flex-wrap gap-1.5">
-                {user.lookingFor.map((i) => (
-                  <span
-                    key={i}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-cyan-500/15 text-cyan-300 border border-cyan-500/30"
-                  >
-                    {i}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Offering */}
-            <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1.5">
-              <span className="text-[11px] text-slate-400 font-semibold block">What I Offer to Dublin</span>
-              <div className="flex flex-wrap gap-1.5">
-                {user.offering.map((i) => (
-                  <span
-                    key={i}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
-                  >
-                    {i}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Visibility Controls */}
-          <div className="space-y-2.5 pt-2 border-t border-slate-800">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
-              Active Geolocation Privacy
-            </span>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              {[
-                { level: 'zone' as VisibilityLevel, label: '500m Zone', desc: 'Blurred circle' },
-                { level: 'district' as VisibilityLevel, label: 'District', desc: 'Neighborhood' },
-                { level: 'exact' as VisibilityLevel, label: 'Exact Point', desc: 'Precise dot' },
-                { level: 'invisible' as VisibilityLevel, label: 'Ghost Mode', desc: 'Invisible to all' },
-              ].map((item) => {
-                const isSelected = user.visibility === item.level;
-                return (
-                  <button
-                    key={item.level}
-                    onClick={() => onUpdateVisibility(item.level)}
-                    className={`p-3 rounded-2xl text-left border transition-all ${
-                      isSelected
-                        ? 'bg-cyan-500/20 border-cyan-400 text-white ring-2 ring-cyan-400/20'
-                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-xs">{item.label}</span>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-cyan-400" />}
-                    </div>
-                    <span className="text-[10px] text-slate-500 block mt-0.5">{item.desc}</span>
+            ) : (
+              blockedPeople.map((p) => (
+                <div key={p.id} className="px-4 py-3 flex items-center gap-3">
+                  <img src={p.avatar} alt={p.name} className="w-8 h-8 rounded-full object-cover" />
+                  <span className="flex-1 text-sm text-ink-strong truncate">{p.name}</span>
+                  <button onClick={() => onUnblock(p.id)} className={`${btnBase} px-3 py-1.5 bg-ink text-white`}>
+                    Unblock
                   </button>
-                );
-              })}
-            </div>
+                </div>
+              ))
+            )}
           </div>
-        </div>
+        </section>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-[#0d1430]/70 flex items-center justify-between">
-          <span className="text-[11px] text-slate-500 font-mono">PicMe Dublin Citizen Profile</span>
-          <button
-            onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold"
-          >
-            Close
+        {/* Log out / delete */}
+        <section className="pt-2 pb-4 flex flex-col items-start gap-3 px-1">
+          <button onClick={() => setDialog('logout')} className="text-sm font-semibold text-danger flex items-center gap-2">
+            <LogOut className="w-4 h-4" />
+            Log out
           </button>
+          <button
+            onClick={() => {
+              setDeleteConfirmText('');
+              setDialog('delete');
+            }}
+            className="text-sm font-semibold text-danger flex items-center gap-2"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete account
+          </button>
+        </section>
+      </div>
+    </div>
+  );
+
+  // ───────────────────────── PROFILE VIEW ─────────────────────────
+  const profileView = (
+    <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
+      {/* Header */}
+      <div className="px-5 pt-5 pb-4 flex items-center gap-4">
+        <div className="relative shrink-0">
+          <img src={user.avatarUrl} alt={user.name} className="w-16 h-16 rounded-full object-cover border-2 border-people" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <h3 className="text-lg font-bold text-ink-strong tracking-tight">{user.name}</h3>
+            <span className="text-xs text-muted">{user.handle}</span>
+          </div>
+          <p className="text-xs text-muted mt-0.5">
+            {user.identity} · {user.activity}
+          </p>
+          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+            <button onClick={onOpenAura} className={`${btnBase} px-2.5 py-1 bg-people hover:bg-people-hover text-ink-strong flex items-center gap-1`}>
+              <Award className="w-3.5 h-3.5" />
+              {user.auraScore} Aura
+            </button>
+            <span className={`${chipOutline} !px-2.5 !py-0.5 border-people text-ink-strong flex items-center gap-1 text-[11px]`}>
+              <Radio className="w-3 h-3" />
+              {signalsLeft} signals left
+            </span>
+            <span className="text-[11px] text-muted flex items-center gap-1">
+              {user.visibility === 'invisible' ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+              Visible: {visibilityLabel.toLowerCase()}
+            </span>
+          </div>
         </div>
       </div>
+
+      <div className="px-4 pb-6 space-y-5">
+        {/* Right now */}
+        <section>
+          <SectionTitle>Right now</SectionTitle>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-muted w-16 shrink-0">Character</span>
+              <span className={`${chipOutline} border-people text-ink-strong`}>{user.status}</span>
+            </div>
+
+            {moodActive && user.mood ? (
+              <div className="rounded-3xl bg-people p-3.5 space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-9 h-9 rounded-full bg-white flex items-center justify-center shrink-0">
+                    <GraphicIcon nameOrEmoji={user.mood.emoji} size={18} className="text-ink-strong" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-ink-strong/70">Mood</div>
+                    <div className="text-sm font-semibold text-ink-strong truncate">{user.mood.text}</div>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-white text-[11px] font-semibold text-ink-strong shrink-0">
+                    {formatTimeLeft(moodMsLeft)}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={onExtendMood} className={`${btnBase} flex-1 py-2 bg-ink text-white`}>
+                    Extend 1 h
+                  </button>
+                  <button onClick={onChangeMood} className={`${btnBase} flex-1 py-2 bg-white text-ink-strong`}>
+                    Change
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-3xl border border-line bg-card p-3.5 flex items-center justify-between gap-3">
+                <span className="text-xs text-muted">No active mood</span>
+                <button onClick={onChangeMood} className={`${btnBase} px-4 py-2 bg-people text-ink-strong`}>
+                  Set mood
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Visibility */}
+        <section>
+          <SectionTitle>Visibility</SectionTitle>
+          <div className="grid grid-cols-4 p-1 rounded-full bg-card border border-line">
+            {VISIBILITY_OPTIONS.map((o) => {
+              const active = user.visibility === o.level;
+              return (
+                <button
+                  key={o.level}
+                  onClick={() => onUpdateVisibility(o.level)}
+                  className={`${btnBase} py-2 ${active ? 'bg-ink text-white' : 'text-muted hover:text-ink-strong'}`}
+                >
+                  {o.label}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* About me */}
+        <section>
+          <SectionTitle
+            action={
+              <button onClick={onOpenOnboardingEdit} className="text-[11px] font-semibold text-ink flex items-center gap-1">
+                <Pencil className="w-3 h-3" /> Edit
+              </button>
+            }
+          >
+            About me
+          </SectionTitle>
+          <div className="rounded-3xl bg-card border border-line p-3.5 space-y-3">
+            <div>
+              <span className="text-[11px] text-muted block mb-1.5">Activity</span>
+              <div className="flex flex-wrap gap-1.5">
+                {[user.identity, user.activity].map((t) => (
+                  <span key={t} className={`${chipOutline} border-line text-ink-strong`}>
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span className="text-[11px] text-muted block mb-1.5">Interests</span>
+              <div className="flex flex-wrap gap-1.5">
+                {user.interests.map((t) => (
+                  <span key={t} className={`${chipOutline} border-people text-ink-strong`}>
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Looking for / Can offer */}
+        <section>
+          <SectionTitle>Looking for / Can offer</SectionTitle>
+          <div className="rounded-3xl bg-card border border-line p-3.5 space-y-3">
+            <div>
+              <span className="text-[11px] text-muted block mb-1.5">Looking for</span>
+              <div className="flex flex-wrap gap-1.5">
+                {user.lookingFor.map((t) => (
+                  <span key={t} className={`${chipOutline} border-opp text-ink-strong`}>
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span className="text-[11px] text-muted block mb-1.5">Can offer</span>
+              <div className="flex flex-wrap gap-1.5">
+                {user.offering.map((t) => (
+                  <span key={t} className={`${chipFilled} bg-opp text-ink-strong`}>
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* My presence on the map */}
+        <section>
+          <SectionTitle>My presence on the map</SectionTitle>
+          {presenceCount === 0 ? (
+            <div className="rounded-3xl bg-card border border-line p-4 text-xs text-muted">
+              Nothing live yet. Anything you post with the + button shows up here while it's on the map.
+            </div>
+          ) : (
+            <div className="rounded-3xl bg-card border border-line divide-y divide-line">
+              {myAnnouncements.map(({ opp, msLeft }) => (
+                <button key={opp.id} onClick={() => onShowOpportunity(opp)} className="w-full px-3.5 py-3 flex items-center gap-3 text-left">
+                  <span className="w-9 h-9 rounded-full bg-opp flex items-center justify-center shrink-0 text-ink-strong">
+                    {opp.type === 'job' ? <Briefcase className="w-4 h-4" /> : <Megaphone className="w-4 h-4" />}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-ink-strong truncate">{opp.title}</div>
+                    <div className="text-[11px] text-muted">Announcement · fades in {formatTimeLeft(msLeft).replace(' left', '')}</div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted shrink-0" />
+                </button>
+              ))}
+              {myEvents.map(({ opp, msLeft }) => (
+                <button key={opp.id} onClick={() => onShowOpportunity(opp)} className="w-full px-3.5 py-3 flex items-center gap-3 text-left">
+                  <span className="w-9 h-9 rounded-full bg-opp flex items-center justify-center shrink-0 text-ink-strong">
+                    <CalendarDays className="w-4 h-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-ink-strong truncate">{opp.title}</div>
+                    <div className="text-[11px] text-muted">Event · fades in {formatTimeLeft(msLeft).replace(' left', '')}</div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted shrink-0" />
+                </button>
+              ))}
+              {myPlaces.map((place) => (
+                <button key={place.id} onClick={() => onShowPlace(place)} className="w-full px-3.5 py-3 flex items-center gap-3 text-left">
+                  <span className="w-9 h-9 rounded-full bg-place flex items-center justify-center shrink-0 text-ink-strong">
+                    {myPlaceEvents.includes(place) ? <CalendarDays className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-ink-strong truncate">{place.name}</div>
+                    <div className="text-[11px] text-muted truncate">
+                      {myPlaceEvents.includes(place) ? `Place · event ${place.eventTime ?? 'today'}` : `Place · ${place.district}`}
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted shrink-0" />
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* How others see me */}
+        <button onClick={() => setDialog('preview')} className={`${btnBase} w-full py-3 bg-ink text-white text-sm flex items-center justify-center gap-2`}>
+          <Eye className="w-4 h-4" />
+          How others see me
+        </button>
+
+        {/* Settings */}
+        <button
+          onClick={() => setView('settings')}
+          className="w-full rounded-3xl bg-card border border-line px-4 py-3.5 flex items-center gap-3 text-left"
+        >
+          <Settings className="w-4 h-4 text-muted" />
+          <span className="flex-1 text-sm font-semibold text-ink-strong">Settings</span>
+          <ChevronRight className="w-4 h-4 text-muted" />
+        </button>
+      </div>
+    </div>
+  );
+
+  // ───────────────────────── DIALOGS ─────────────────────────
+  const renderDialog = () => {
+    if (!dialog) return null;
+
+    let body: React.ReactNode = null;
+
+    if (dialog === 'preview') {
+      body = (
+        <>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-bold text-ink-strong">How people nearby see you</h4>
+            <button onClick={() => setDialog(null)} className="w-8 h-8 rounded-full bg-card flex items-center justify-center text-muted" aria-label="Close">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {user.visibility === 'invisible' ? (
+            <div className="rounded-3xl bg-card border border-line p-5 text-center space-y-2">
+              <EyeOff className="w-6 h-6 text-muted mx-auto" />
+              <p className="text-sm font-semibold text-ink-strong">You're invisible</p>
+              <p className="text-xs text-muted">Nobody nearby sees your card or your spot on the map.</p>
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-line bg-white p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <img src={user.avatarUrl} alt={user.name} className="w-12 h-12 rounded-full object-cover border-2 border-people" />
+                <div className="min-w-0">
+                  <div className="text-sm font-bold text-ink-strong">
+                    {user.name} <span className="font-normal text-muted text-xs">{user.handle}</span>
+                  </div>
+                  <div className="text-[11px] text-muted">
+                    {user.identity} · {user.activity}
+                  </div>
+                  <div className="text-[11px] text-muted flex items-center gap-1 mt-0.5">
+                    <MapPin className="w-3 h-3" />
+                    {distanceLine[user.visibility]}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <span className={`${chipOutline} border-people text-ink-strong`}>{user.status}</span>
+                {moodActive && user.mood && (
+                  <span className={`${chipFilled} bg-people text-ink-strong flex items-center gap-1`}>
+                    <GraphicIcon nameOrEmoji={user.mood.emoji} size={12} className="text-ink-strong" />
+                    {user.mood.text}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {user.interests.map((t) => (
+                  <span key={t} className={`${chipOutline} border-people text-ink-strong`}>
+                    {t}
+                  </span>
+                ))}
+              </div>
+              <div className={`${btnBase} w-full py-2.5 bg-people text-ink-strong text-center`}>Send signal</div>
+            </div>
+          )}
+          <p className="text-[11px] text-muted mt-3 text-center">Preview only — based on your current visibility ({visibilityLabel.toLowerCase()}).</p>
+        </>
+      );
+    }
+
+    if (dialog === 'logout') {
+      body = (
+        <div className="space-y-4">
+          <h4 className="text-base font-bold text-ink-strong">Log out of your account?</h4>
+          <div className="flex gap-2">
+            <button onClick={onLogout} className={`${btnBase} flex-1 py-2.5 bg-danger text-white text-sm`}>
+              Log out
+            </button>
+            <button onClick={() => setDialog(null)} className={`${btnBase} flex-1 py-2.5 bg-card border border-line text-ink-strong text-sm`}>
+              Cancel
+            </button>
+          </div>
+          <div className="rounded-3xl bg-card border border-line p-3.5 space-y-2.5">
+            <p className="text-xs text-ink-strong">Just want to disappear from the map? Turn on invisible mode.</p>
+            <button
+              onClick={() => {
+                onUpdateVisibility('invisible');
+                setDialog(null);
+              }}
+              className={`${btnBase} px-4 py-2 bg-ink text-white flex items-center gap-1.5`}
+            >
+              <EyeOff className="w-3.5 h-3.5" />
+              Go invisible
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (dialog === 'delete') {
+      const canDelete = deleteConfirmText.trim().toUpperCase() === 'DELETE';
+      body = (
+        <div className="space-y-3.5">
+          <h4 className="text-base font-bold text-danger">Delete your account for good?</h4>
+          <p className="text-xs text-ink-strong">
+            Your profile, Aura, signals, and everything you've added to the map will be permanently removed. This can't be undone.
+          </p>
+          <label className="block">
+            <span className="text-[11px] text-muted">Type DELETE to confirm</span>
+            <input
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              className="mt-1 w-full px-3.5 py-2.5 rounded-2xl bg-card border border-line text-sm text-ink-strong outline-none focus:border-danger"
+              placeholder="DELETE"
+            />
+          </label>
+          <div className="flex gap-2">
+            <button
+              onClick={onDeleteAccount}
+              disabled={!canDelete}
+              className={`${btnBase} flex-1 py-2.5 text-sm ${canDelete ? 'bg-danger text-white' : 'bg-line text-muted cursor-not-allowed'}`}
+            >
+              Delete account
+            </button>
+            <button onClick={() => setDialog(null)} className={`${btnBase} flex-1 py-2.5 bg-card border border-line text-ink-strong text-sm`}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="absolute inset-0 z-50 flex items-end justify-center bg-ink-strong/40 fade-in" onClick={() => setDialog(null)}>
+        <div className="w-full bg-white rounded-t-3xl p-5 pb-6 slide-up-in max-h-full overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
+          {body}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="absolute inset-0 z-30 bg-white flex flex-col">
+      {view === 'settings' ? settingsView : profileView}
+      {renderDialog()}
     </div>
   );
 };

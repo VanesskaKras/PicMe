@@ -1,20 +1,57 @@
 @import "tailwindcss";
 
+/* PicMe colour system — 4 categories:
+   1. Neutrals  (ink, muted, line, card…)  → UI skeleton
+   2. Layers    (people / place / opp)     → colour = type of entity
+   3. Sub-categories use their layer colour; icons tell them apart
+   4. Semantic  (success / warning / danger) → state, not tied to a layer
+   JS mirror for map APIs: src/theme.ts */
+@theme {
+  /* ── 2. LAYERS: colour = type of entity ──────────────────────────
+     people = pink, places = pastel turquoise, opportunities = leaf green.
+     soft   → chip / tinted background
+     (base) → fills, markers, primary button of that layer
+     strong → text & icons on white (AA contrast) */
+  --color-people-soft: #fbe9e6;
+  --color-people: #efaca4;
+  --color-people-hover: #e3968b;
+  --color-people-strong: #8f5048;
+
+  --color-place-soft: #e2f5f1;
+  --color-place: #9fdcd0;
+  --color-place-hover: #7fcbbd;
+  --color-place-strong: #2e6b61;
+
+  --color-opp-soft: #ebf5da;
+  --color-opp: #badd7f;
+  --color-opp-hover: #9cc55a;
+  --color-opp-strong: #55722a;
+
+  /* ── 1. NEUTRALS: warm green-grey, never slate ─────────────────── */
+  --color-ink: #324517;         /* general actions not tied to a layer */
+  --color-ink-soft: #e6ebdc;    /* selected state of generic controls */
+  --color-ink-strong: #1f2a10;  /* headings & body text */
+  --color-muted: #6b7560;       /* secondary text */
+  --color-subtle: #8a9677;      /* placeholders, idle icons */
+  --color-line: #e3e8da;        /* borders, dividers */
+  --color-line-strong: #cfd6c4; /* input outlines, radio rings */
+  --color-card: #f5f7f0;        /* card / input background */
+  --color-canvas: #eef2e4;      /* map & app background */
+
+  /* ── 4. SEMANTIC STATES: not tied to a layer ───────────────────── */
+  --color-success: #55722a;     /* aura gain, accepted */
+  --color-success-soft: #ebf5da;
+  --color-warning: #b45309;     /* timers, expiry, quiet hours */
+  --color-warning-soft: #fdf3e3;
+  --color-danger: #b5594d;      /* penalties, delete, decline, log out */
+  --color-danger-soft: #f8e9e6;
+}
+
 @layer base {
-  :root {
-    --navy-950: #050814;
-    --navy-900: #0a0f24;
-    --navy-800: #0f1738;
-    --navy-700: #19234d;
-    --pink-accent: #ff2a85;
-    --cyan-accent: #00f0ff;
-    --emerald-accent: #10b981;
-  }
-  
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #070b19;
-    color: #f1f5f9;
+    background-color: var(--color-canvas);
+    color: var(--color-ink-strong);
   }
 
   h1, h2, h3, .font-display {
@@ -27,16 +64,16 @@
   }
 }
 
-/* Custom Leaflet Map styling for seamless dark navy tone */
+/* Custom Leaflet Map styling: white with a soft green tint */
 .leaflet-container {
-  background-color: #070b19 !important;
+  background-color: var(--color-canvas) !important;
   font-family: inherit !important;
   width: 100%;
   height: 100%;
 }
 
 .leaflet-tile {
-  filter: brightness(0.65) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) !important;
+  filter: sepia(0.25) hue-rotate(40deg) saturate(1.4) brightness(1.02) !important;
 }
 
 /* Custom marker pulse radar */
@@ -62,31 +99,31 @@
 /* Hide default leaflet attribution / zoom controls custom styling */
 .leaflet-control-zoom {
   border: none !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 4px 16px rgba(31, 42, 16, 0.12) !important;
   border-radius: 12px !important;
   overflow: hidden !important;
 }
 
 .leaflet-control-zoom a {
-  background-color: #0c1228 !important;
-  color: #94a3b8 !important;
-  border-color: #1e293b !important;
+  background-color: #ffffff !important;
+  color: var(--color-ink) !important;
+  border-color: var(--color-line) !important;
 }
 
 .leaflet-control-zoom a:hover {
-  background-color: #1e293b !important;
-  color: #f8fafc !important;
+  background-color: var(--color-card) !important;
+  color: var(--color-ink-strong) !important;
 }
 
 .leaflet-control-attribution {
-  background: rgba(7, 11, 25, 0.7) !important;
-  color: #64748b !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+  color: var(--color-muted) !important;
   font-size: 10px !important;
   backdrop-filter: blur(8px);
 }
 
 .leaflet-control-attribution a {
-  color: #94a3b8 !important;
+  color: var(--color-ink) !important;
 }
 
 /* Custom scrollbar */
@@ -96,14 +133,33 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #070b19;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e294b;
+  background: var(--color-line-strong);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: var(--color-subtle);
 }
+
+/* Hide horizontal scrollbars on chip rows */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Filters top sheet */
+@keyframes slide-down-in { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+@keyframes fade-in-kf { from { opacity: 0; } to { opacity: 1; } }
+.slide-down-in { animation: slide-down-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.fade-in { animation: fade-in-kf 200ms ease-out; }
+@keyframes slide-up-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.slide-up-in { animation: slide-up-in 240ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+/* Map: signal-match avatar pulses once with a soft pink ring */
+@keyframes marker-pulse-once {
+  0% { box-shadow: 0 0 0 0 rgba(239, 172, 164, 0.9); }
+  100% { box-shadow: 0 0 0 16px rgba(239, 172, 164, 0); }
+}
+.marker-pulse-once { animation: marker-pulse-once 1.8s ease-out 1; }

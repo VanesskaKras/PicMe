@@ -56,7 +56,7 @@ import { AuraModal } from './components/AuraModal';
 import { ChatDrawer } from './components/ChatDrawer';
 import { ItemDetailDrawer } from './components/ItemDetailDrawer';
 import { OpportunitiesListModal } from './components/OpportunitiesListModal';
-import { ProfileModal } from './components/ProfileModal';
+import { ProfileModal, BlockedPerson, loadProfileSettings } from './components/ProfileModal';
 import { PlusActionDrawer } from './components/PlusActionDrawer';
 import { AddPlaceModal } from './components/AddPlaceModal';
 import { AddOpportunityModal } from './components/AddOpportunityModal';
@@ -113,12 +113,21 @@ export default function App() {
     };
   });
 
-  // Layers Toggles
-  const [layers, setLayers] = useState({
-    people: true,
-    places: true,
-    opportunities: true,
+  // Map layers: defaults come from Profile > Settings > Default map layers
+  const [layers] = useState(() => loadProfileSettings().defaultLayers);
+
+  // People the user blocked from Signals (managed in Profile > Settings)
+  const [blockedPeople, setBlockedPeople] = useState<BlockedPerson[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('picme_blocked') || '[]');
+    } catch (e) {
+      return [];
+    }
   });
+  const saveBlocked = (list: BlockedPerson[]) => {
+    setBlockedPeople(list);
+    localStorage.setItem('picme_blocked', JSON.stringify(list));
+  };
 
   // Places & Opportunities (persisted with initial Dublin defaults)
   const [places, setPlaces] = useState<DublinPlace[]>(() => {
@@ -213,9 +222,6 @@ export default function App() {
   const [isSignalOpen, setIsSignalOpen] = useState(false);
   const [isStatusMoodOpen, setIsStatusMoodOpen] = useState(false);
   const [isAuraOpen, setIsAuraOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isOpportunitiesOpen, setIsOpportunitiesOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isPlusActionOpen, setIsPlusActionOpen] = useState(false);
   const [isAddPlaceOpen, setIsAddPlaceOpen] = useState(false);
   const [isAddOpportunityOpen, setIsAddOpportunityOpen] = useState(false);
@@ -231,7 +237,7 @@ export default function App() {
     return (
       (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY ||
       localStorage.getItem('picme_map_key') ||
-      'AIzaSyC1nRfB-YlvDvbWDXWRcYJTFT4aij_neu4'
+      ''
     );
   });
 
@@ -367,21 +373,18 @@ export default function App() {
 
   // Handle Block / Report
   const handleBlockReport = (threadId: string) => {
+    const thread = chatThreads.find((t) => t.id === threadId);
+    if (thread && !blockedPeople.some((b) => b.id === thread.peerId)) {
+      saveBlocked([...blockedPeople, { id: thread.peerId, name: thread.peerName, avatar: thread.peerAvatar }]);
+    }
     setChatThreads((prev) => prev.filter((t) => t.id !== threadId));
     showToast('Contact muted. Your Aura remains fully protected.');
-  };
-
-  // Toggle Layer
-  const toggleLayer = (key: 'people' | 'places' | 'opportunities') => {
-    setLayers((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   // Switch Bottom Tab
   const handleTabChange = (tab: 'map' | 'opportunities' | 'chat' | 'profile') => {
     setActiveTab(tab);
-    if (tab === 'opportunities') setIsOpportunitiesOpen(true);
-    if (tab === 'chat') setIsChatOpen(true);
-    if (tab === 'profile') setIsProfileOpen(true);
+    setIsFilterMenuOpen(false);
   };
 
   // Add Place to live radar
@@ -439,263 +442,31 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-full bg-[#050814] text-slate-100 flex flex-col items-center justify-center relative font-sans overflow-hidden select-none">
+    <div className="h-screen w-full bg-canvas text-ink-strong flex flex-col items-center justify-center relative font-sans overflow-hidden select-none">
       {/* GLOBAL TOAST */}
       {toastMessage && (
-        <div className="fixed top-4 z-[9999] px-4 py-2.5 rounded-2xl bg-gradient-to-r from-pink-500/90 to-cyan-500/90 backdrop-blur-md text-slate-950 font-bold text-xs shadow-2xl flex items-center gap-2 animate-bounce">
-          <Sparkles className="w-4 h-4 text-slate-950" />
+        <div className="fixed top-4 z-[9999] px-4 py-2.5 rounded-2xl bg-ink/95 backdrop-blur-md text-white font-bold text-xs shadow-2xl flex items-center gap-2 animate-bounce">
+          <Sparkles className="w-4 h-4 text-opp" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* MOBILE APPLICATION CONTAINER */}
-      <div className="relative w-full max-w-[430px] h-full sm:h-[94vh] sm:max-h-[890px] sm:rounded-[40px] sm:border-[8px] sm:border-[#131b34] sm:shadow-[0_0_60px_rgba(0,0,0,0.85)] bg-[#070b19] overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-[430px] h-full sm:h-[94vh] sm:max-h-[890px] sm:rounded-[40px] sm:border-[8px] sm:border-ink-strong sm:shadow-[0_20px_60px_rgba(31,42,16,0.35)] bg-canvas overflow-hidden flex flex-col @container">
         {/* TOP MOBILE STATUS BAR */}
-        <div className="h-10 px-6 pt-2 bg-[#070b19]/90 backdrop-blur-md flex items-center justify-between text-[11px] text-slate-300 z-30 shrink-0 select-none">
+        <div className="h-10 px-6 pt-2 bg-white/90 backdrop-blur-md flex items-center justify-between text-[11px] text-ink-strong z-30 shrink-0 select-none">
           <span className="font-semibold font-mono">9:41</span>
           {/* Dynamic Island pill */}
-          <div className="w-24 h-4 bg-black rounded-full border border-slate-800/80 shadow-inner flex items-center justify-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-            <span className="text-[9px] text-cyan-300 font-mono">Dublin Active</span>
+          <div className="w-24 h-4 bg-ink-strong rounded-full shadow-inner flex items-center justify-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-opp animate-ping" />
+            <span className="text-[9px] text-opp font-mono">Dublin Active</span>
           </div>
           <div className="flex items-center gap-1 font-mono text-[10px]">
             <span>5G</span>
-            <span className="w-4 h-2 rounded-sm border border-slate-400 p-[1px] inline-flex items-center">
-              <span className="w-2.5 h-full bg-emerald-400 rounded-2xs" />
+            <span className="w-4 h-2 rounded-sm border border-line-strong p-[1px] inline-flex items-center">
+              <span className="w-2.5 h-full bg-success rounded-2xs" />
             </span>
           </div>
-        </div>
-
-        {/* 3 LAYER TOGGLES BAR WITH SLIDERS SETTINGS ICON AT THE END */}
-        <div className="px-3 py-2 bg-[#080d1f]/95 border-b border-slate-800/80 z-20 shrink-0 relative">
-          <div className="flex items-center gap-1.5">
-            {/* Layer 1: People */}
-            <button
-              onClick={() => toggleLayer('people')}
-              className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 transition-all ${
-                layers.people
-                  ? 'bg-pink-500/20 text-pink-200 border-pink-400 shadow-sm shadow-pink-500/20'
-                  : 'bg-slate-900/60 text-slate-500 border-slate-800'
-              }`}
-            >
-              <span className={`w-2 h-2 rounded-full ${layers.people ? 'bg-pink-400 animate-pulse' : 'bg-slate-600'}`} />
-              <span>People</span>
-            </button>
-
-            {/* Layer 2: Places */}
-            <button
-              onClick={() => toggleLayer('places')}
-              className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 transition-all ${
-                layers.places
-                  ? 'bg-cyan-500/20 text-cyan-200 border-cyan-400 shadow-sm shadow-cyan-500/20'
-                  : 'bg-slate-900/60 text-slate-500 border-slate-800'
-              }`}
-            >
-              <span className={`w-2 h-2 rounded-full ${layers.places ? 'bg-cyan-400 animate-pulse' : 'bg-slate-600'}`} />
-              <span>Places</span>
-            </button>
-
-            {/* Layer 3: Opportunities */}
-            <button
-              onClick={() => toggleLayer('opportunities')}
-              className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 transition-all ${
-                layers.opportunities
-                  ? 'bg-emerald-500/20 text-emerald-200 border-emerald-400 shadow-sm shadow-emerald-500/20'
-                  : 'bg-slate-900/60 text-slate-500 border-slate-800'
-              }`}
-            >
-              <span className={`w-2 h-2 rounded-full ${layers.opportunities ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'}`} />
-              <span>Opportunities</span>
-            </button>
-
-            {/* Settings sliders button at the end of the row */}
-            <button
-              onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-              className={`p-2 rounded-xl border transition-all flex items-center justify-center relative shrink-0 ${
-                isFilterMenuOpen || peopleFilter !== 'all' || placesFilter !== 'all' || oppsFilter !== 'all'
-                  ? 'bg-cyan-500/25 text-cyan-300 border-cyan-400 shadow-[0_0_12px_rgba(0,240,255,0.3)]'
-                  : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
-              }`}
-              title="Category Filters"
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-              {(peopleFilter !== 'all' || placesFilter !== 'all' || oppsFilter !== 'all') && (
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-pink-500 ring-2 ring-slate-950" />
-              )}
-            </button>
-          </div>
-
-          {/* Hidden Settings / Category Filters Menu (Revealed when sliders icon is clicked) */}
-          {isFilterMenuOpen && (
-            <div className="mt-2 pt-2.5 border-t border-slate-800/80 space-y-2 animate-in fade-in slide-in-from-top-2 duration-150">
-              {/* Row 1: People (Pink theme matching People category) */}
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-                <span className="text-[11px] font-bold text-pink-300 shrink-0 w-20">People:</span>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    onClick={() => setPeopleFilter('all')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
-                      peopleFilter === 'all'
-                        ? 'bg-pink-500/20 text-pink-200 border border-pink-400 font-bold shadow-sm shadow-pink-500/20'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800 font-medium'
-                    }`}
-                  >
-                    All Open
-                  </button>
-                  <button
-                    onClick={() => setPeopleFilter('interests')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
-                      peopleFilter === 'interests'
-                        ? 'bg-pink-500/20 text-pink-200 border border-pink-400 font-bold shadow-sm shadow-pink-500/20'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800 font-medium'
-                    }`}
-                  >
-                    Matching Interests
-                  </button>
-                  <button
-                    onClick={() => setPeopleFilter('mood')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
-                      peopleFilter === 'mood'
-                        ? 'bg-pink-500/20 text-pink-200 border border-pink-400 font-bold shadow-sm shadow-pink-500/20'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800 font-medium'
-                    }`}
-                  >
-                    Shared Mood
-                  </button>
-                </div>
-              </div>
-
-              {/* Row 2: Places (Cyan theme matching Places category) */}
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-                <span className="text-[11px] font-bold text-cyan-300 shrink-0 w-20">Places:</span>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    onClick={() => setPlacesFilter('all')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
-                      placesFilter === 'all'
-                        ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400 font-bold shadow-sm shadow-cyan-500/20'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800 font-medium'
-                    }`}
-                  >
-                    All
-                  </button>
-                  <button
-                    onClick={() => setPlacesFilter('cafe')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
-                      placesFilter === 'cafe'
-                        ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400 font-bold shadow-sm shadow-cyan-500/20'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800 font-medium'
-                    }`}
-                  >
-                    Coffee & Food
-                  </button>
-                  <button
-                    onClick={() => setPlacesFilter('coworking')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
-                      placesFilter === 'coworking'
-                        ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400 font-bold shadow-sm shadow-cyan-500/20'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800 font-medium'
-                    }`}
-                  >
-                    Coworking
-                  </button>
-                  <button
-                    onClick={() => setPlacesFilter('sport')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
-                      placesFilter === 'sport'
-                        ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400 font-bold shadow-sm shadow-cyan-500/20'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800 font-medium'
-                    }`}
-                  >
-                    Sports
-                  </button>
-                  <button
-                    onClick={() => setPlacesFilter('culture')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
-                      placesFilter === 'culture'
-                        ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400 font-bold shadow-sm shadow-cyan-500/20'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800 font-medium'
-                    }`}
-                  >
-                    Culture
-                  </button>
-                </div>
-              </div>
-
-              {/* Row 3: Opportunities (Emerald theme matching Opportunities category) */}
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-                <span className="text-[11px] font-bold text-emerald-300 shrink-0 w-20">Opportunities:</span>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    onClick={() => setOppsFilter('all')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
-                      oppsFilter === 'all'
-                        ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400 font-bold shadow-sm shadow-emerald-500/20'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800 font-medium'
-                    }`}
-                  >
-                    All
-                  </button>
-                  <button
-                    onClick={() => setOppsFilter('housing')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
-                      oppsFilter === 'housing'
-                        ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400 font-bold shadow-sm shadow-emerald-500/20'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800 font-medium'
-                    }`}
-                  >
-                    Housing (714)
-                  </button>
-                  <button
-                    onClick={() => setOppsFilter('job')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
-                      oppsFilter === 'job'
-                        ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400 font-bold shadow-sm shadow-emerald-500/20'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800 font-medium'
-                    }`}
-                  >
-                    Jobs (1154)
-                  </button>
-                  <button
-                    onClick={() => setOppsFilter('collaboration')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
-                      oppsFilter === 'collaboration'
-                        ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400 font-bold shadow-sm shadow-emerald-500/20'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800 font-medium'
-                    }`}
-                  >
-                    Collaborations
-                  </button>
-                  <button
-                    onClick={() => setOppsFilter('activity')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] transition-all ${
-                      oppsFilter === 'activity'
-                        ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400 font-bold shadow-sm shadow-emerald-500/20'
-                        : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800 font-medium'
-                    }`}
-                  >
-                    Activities
-                  </button>
-                </div>
-              </div>
-
-              {/* Reset shortcut */}
-              {(peopleFilter !== 'all' || placesFilter !== 'all' || oppsFilter !== 'all') && (
-                <div className="pt-1 flex justify-end">
-                  <button
-                    onClick={() => {
-                      setPeopleFilter('all');
-                      setPlacesFilter('all');
-                      setOppsFilter('all');
-                    }}
-                    className="text-[11px] text-pink-400 hover:underline font-semibold"
-                  >
-                    Reset all filters
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
           {/* MAP CANVAS AREA */}
@@ -734,53 +505,224 @@ export default function App() {
               onRequireOnboarding={handleRequireOnboarding}
             />
 
-            {/* Quick Opportunities Drawer Trigger on Map */}
-            <div className="absolute bottom-4 right-3 z-10">
-              <button
-                onClick={() => setIsOpportunitiesOpen(true)}
-                className="px-3.5 py-2 rounded-2xl bg-emerald-500 text-slate-950 font-bold text-xs shadow-xl shadow-emerald-500/30 flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-transform"
-              >
-                <Briefcase className="w-3.5 h-3.5" />
-                <span>{opportunities.length} Leads</span>
-              </button>
-            </div>
+            {/* FLOATING SLIDERS SETTINGS BUTTON OVER THE MAP (layer toggles + filters live in the top sheet) */}
+            <button
+              onClick={() => setIsFilterMenuOpen(true)}
+              className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-white text-ink shadow-lg shadow-ink-strong/15 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+              title="Layers & Filters"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              {(peopleFilter !== 'all' || placesFilter !== 'all' || oppsFilter !== 'all') && (
+                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-ink ring-2 ring-white" />
+              )}
+            </button>
+
+            {/* TOP SHEET: layer toggles + category filters. Each row takes its layer colour: people = pink, places = forest, opportunities = leaf */}
+            {isFilterMenuOpen && (
+              <>
+                <div className="absolute inset-0 z-30 bg-black/30 fade-in" onClick={() => setIsFilterMenuOpen(false)} />
+                <div className="absolute top-0 inset-x-0 z-40 bg-white rounded-b-3xl shadow-2xl shadow-black/30 px-4 pt-3 pb-4 space-y-3 slide-down-in">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-ink-strong">Layers & Filters</span>
+                    <button
+                      onClick={() => setIsFilterMenuOpen(false)}
+                      className="w-10 h-10 rounded-full bg-card text-ink flex items-center justify-center"
+                      title="Close"
+                    >
+                      <SlidersHorizontal className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Category filter rows */}
+                  {[
+                    {
+                      label: 'People',
+                      dot: 'bg-people',
+                      active: 'bg-people border-people text-ink-strong font-bold',
+                      value: peopleFilter,
+                      set: setPeopleFilter as (v: string) => void,
+                      options: [
+                        ['all', 'All Open'],
+                        ['interests', 'Matching Interests'],
+                        ['mood', 'Shared Mood'],
+                      ],
+                    },
+                    {
+                      label: 'Places',
+                      dot: 'bg-place',
+                      active: 'bg-place border-place text-ink-strong font-bold',
+                      value: placesFilter,
+                      set: setPlacesFilter as (v: string) => void,
+                      options: [
+                        ['all', 'All'],
+                        ['cafe', 'Coffee & Food'],
+                        ['coworking', 'Coworking'],
+                        ['sport', 'Sports'],
+                        ['culture', 'Culture'],
+                      ],
+                    },
+                    {
+                      label: 'Opportunities',
+                      dot: 'bg-opp',
+                      active: 'bg-opp border-opp text-ink-strong font-bold',
+                      value: oppsFilter,
+                      set: setOppsFilter as (v: string) => void,
+                      options: [
+                        ['all', 'All'],
+                        ['housing', 'Housing (714)'],
+                        ['job', 'Jobs (1154)'],
+                        ['collaboration', 'Collaborations'],
+                        ['activity', 'Activities'],
+                      ],
+                    },
+                  ].map((row) => (
+                    <div key={row.label} className="space-y-1.5">
+                      <span className="text-[11px] font-bold text-muted flex items-center gap-1.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${row.dot}`} />
+                        {row.label}
+                      </span>
+                      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                        {row.options.map(([value, text]) => (
+                          <button
+                            key={value}
+                            onClick={() => row.set(value)}
+                            className={`shrink-0 px-3 py-1.5 rounded-xl text-[11px] border transition-all ${
+                              row.value === value
+                                ? row.active
+                                : 'bg-card border-line text-muted hover:text-ink-strong font-medium'
+                            }`}
+                          >
+                            {text}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Reset shortcut */}
+                  {(peopleFilter !== 'all' || placesFilter !== 'all' || oppsFilter !== 'all') && (
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => {
+                          setPeopleFilter('all');
+                          setPlacesFilter('all');
+                          setOppsFilter('all');
+                        }}
+                        className="text-[11px] text-ink hover:underline font-semibold"
+                      >
+                        Reset all filters
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* ITEM DETAIL BOTTOM SHEET (WHEN A PLACE OR OPPORTUNITY IS SELECTED), inside the map screen */}
+            <ItemDetailDrawer
+              place={selectedPlace}
+              opportunity={selectedOpportunity}
+              onClose={() => {
+                setSelectedPlace(null);
+                setSelectedOpportunity(null);
+              }}
+              onBookmark={(title) => showToast(`Saved "${title}" to your Dublin collection.`)}
+              onAction={(msg) => showToast(msg)}
+            />
+
+            {/* SIGNALS SCREEN (RESONANCE & REQUESTS) */}
+            <ChatDrawer
+              isOpen={activeTab === 'chat'}
+              onClose={() => setActiveTab('map')}
+              threads={chatThreads}
+              currentUser={userProfile}
+              nearbyUsers={NEARBY_DUBLIN_USERS}
+              dailySignalsRemaining={userProfile.dailySignalsLimit - userProfile.dailySignalsUsed}
+              onSendSignal={handleSendSignal}
+              onReplyThread={handleReplyThread}
+              onPolitelyDecline={handlePolitelyDecline}
+              onBlockReport={handleBlockReport}
+              onOpenStatusMood={() => setIsStatusMoodOpen(true)}
+            />
+
+            {/* OPPORTUNITIES SCREEN */}
+            <OpportunitiesListModal
+              isOpen={activeTab === 'opportunities'}
+              onClose={() => setActiveTab('map')}
+              opportunities={opportunities}
+              onSelectOpportunity={(opp) => {
+                setSelectedOpportunity(opp);
+                setActiveTab('map');
+              }}
+            />
+
+            {/* PROFILE SCREEN */}
+            <ProfileModal
+              isOpen={activeTab === 'profile'}
+              onClose={() => setActiveTab('map')}
+              user={userProfile}
+              places={places}
+              opportunities={opportunities}
+              blockedPeople={blockedPeople}
+              onUpdateVisibility={(level: VisibilityLevel) => {
+                saveProfile({ visibility: level });
+                showToast(`Visibility set to ${level}`);
+              }}
+              onOpenOnboardingEdit={() => setIsOnboardingModalOpen(true)}
+              onOpenAura={() => setIsAuraOpen(true)}
+              onExtendMood={() => {
+                if (!userProfile.mood) return;
+                const base = Math.max(Date.now(), userProfile.mood.expiresAt);
+                saveProfile({ mood: { ...userProfile.mood, expiresAt: base + 60 * 60 * 1000 } });
+                showToast('Mood extended by 1 hour');
+              }}
+              onChangeMood={() => setIsStatusMoodOpen(true)}
+              onShowPlace={(place) => {
+                setSelectedPlace(place);
+                setSelectedOpportunity(null);
+                setActiveTab('map');
+              }}
+              onShowOpportunity={(opp) => {
+                setSelectedOpportunity(opp);
+                setSelectedPlace(null);
+                setActiveTab('map');
+              }}
+              onUnblock={(id) => saveBlocked(blockedPeople.filter((b) => b.id !== id))}
+              onLogout={() => {
+                localStorage.removeItem('picme_onboarded');
+                window.location.reload();
+              }}
+              onDeleteAccount={() => {
+                Object.keys(localStorage)
+                  .filter((k) => k.startsWith('picme_'))
+                  .forEach((k) => localStorage.removeItem(k));
+                window.location.reload();
+              }}
+            />
           </div>
 
-          {/* ITEM DETAIL DRAWER (WHEN A PLACE OR OPPORTUNITY IS SELECTED) */}
-          <ItemDetailDrawer
-            place={selectedPlace}
-            opportunity={selectedOpportunity}
-            onClose={() => {
-              setSelectedPlace(null);
-              setSelectedOpportunity(null);
-            }}
-            onBookmark={(title) => showToast(`Saved "${title}" to your Dublin collection.`)}
-            onAction={(msg) => showToast(msg)}
-          />
-
           {/* BOTTOM NAVIGATION TAB BAR (5 ITEMS: MAP, OPPORTUNITIES, +, SIGNALS, PROFILE) */}
-          <nav className="h-16 px-2 bg-[#070b19]/95 backdrop-blur-md border-t border-slate-800/90 grid grid-cols-5 items-center z-20 shrink-0 select-none">
+          {/* Active tab takes its layer colour (map/profile = ink, opportunities = opp, signals = people). Inactive: subtle. */}
+          <nav className="h-16 px-2 bg-white border-t border-line shadow-[0_-4px_12px_rgba(31,42,16,0.06)] grid grid-cols-5 items-center z-20 shrink-0 select-none">
             {/* TAB 1: MAP */}
             <button
               onClick={() => handleTabChange('map')}
-              className={`flex flex-col items-center justify-center transition-colors ${
-                activeTab === 'map' ? 'text-pink-400' : 'text-slate-500 hover:text-slate-300'
-              }`}
+              className="flex flex-col items-center justify-center transition-colors group"
             >
-              <Compass className="w-5 h-5" />
-              <span className="text-[10px] font-semibold mt-1">Map</span>
+              <Compass className={`w-5 h-5 ${activeTab === 'map' ? 'text-ink' : 'text-subtle group-hover:text-muted'}`} />
+              <span className={`text-[11px] mt-1 ${activeTab === 'map' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>Map</span>
             </button>
 
             {/* TAB 2: OPPORTUNITIES */}
             <button
               onClick={() => handleTabChange('opportunities')}
-              className={`flex flex-col items-center justify-center transition-colors relative ${
-                activeTab === 'opportunities' ? 'text-emerald-400' : 'text-slate-500 hover:text-slate-300'
-              }`}
+              className="flex flex-col items-center justify-center transition-colors group"
             >
-              <Briefcase className="w-5 h-5" />
-              <span className="text-[10px] font-semibold mt-1">Opportunities</span>
-              <span className="absolute top-0 right-3 w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="relative">
+                <Briefcase className={`w-5 h-5 ${activeTab === 'opportunities' ? 'text-opp-strong' : 'text-subtle group-hover:text-muted'}`} />
+                <span className="absolute -top-1 -right-2.5 w-2 h-2 rounded-full bg-opp" />
+              </span>
+              <span className={`text-[11px] mt-1 ${activeTab === 'opportunities' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>Opportunities</span>
             </button>
 
             {/* TAB 3: PLUS ACTION BUTTON (+) */}
@@ -789,7 +731,7 @@ export default function App() {
               aria-label="Add or Broadcast"
               className="flex flex-col items-center justify-center group relative -top-1"
             >
-              <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-pink-500 via-rose-500 to-cyan-400 flex items-center justify-center text-slate-950 font-bold shadow-lg shadow-pink-500/30 group-hover:scale-110 active:scale-95 transition-all">
+              <div className="w-12 h-12 rounded-full bg-people hover:bg-people-hover flex items-center justify-center text-white shadow-lg shadow-people/40 group-hover:scale-110 active:scale-95 transition-all">
                 <Plus className="w-6 h-6 stroke-[2.5]" />
               </div>
             </button>
@@ -797,159 +739,98 @@ export default function App() {
             {/* TAB 4: SIGNALS */}
             <button
               onClick={() => handleTabChange('chat')}
-              className={`flex flex-col items-center justify-center transition-colors relative ${
-                activeTab === 'chat' ? 'text-emerald-400' : 'text-slate-500 hover:text-slate-300'
-              }`}
+              className="flex flex-col items-center justify-center transition-colors group"
             >
-              <Zap className="w-5 h-5" />
-              <span className="text-[10px] font-semibold mt-1">Signals</span>
-              {chatThreads.some((t) => t.stage === 'hidden_notification') && (
-                <span className="absolute top-0 right-3 w-2 h-2 rounded-full bg-pink-500 animate-ping" />
-              )}
+              <span className="relative">
+                <Zap className={`w-5 h-5 ${activeTab === 'chat' ? 'text-people-strong' : 'text-subtle group-hover:text-muted'}`} />
+                {chatThreads.some((t) => t.stage === 'hidden_notification') && (
+                  <span className="absolute -top-1 -right-2.5 w-2 h-2 rounded-full bg-people animate-ping" />
+                )}
+              </span>
+              <span className={`text-[11px] mt-1 ${activeTab === 'chat' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>Signals</span>
             </button>
 
             {/* TAB 5: PROFILE */}
             <button
               onClick={() => handleTabChange('profile')}
-              className={`flex flex-col items-center justify-center transition-colors ${
-                activeTab === 'profile' ? 'text-white' : 'text-slate-500 hover:text-slate-300'
-              }`}
+              className="flex flex-col items-center justify-center transition-colors group"
             >
-              <div className="w-5 h-5 rounded-full overflow-hidden border border-slate-700">
+              <div className={`w-5 h-5 rounded-full overflow-hidden border ${activeTab === 'profile' ? 'border-ink' : 'border-line'}`}>
                 <img src={userProfile.avatarUrl} alt="Me" className="w-full h-full object-cover" />
               </div>
-              <span className="text-[10px] font-semibold mt-1">Profile</span>
+              <span className={`text-[11px] mt-1 ${activeTab === 'profile' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>Profile</span>
             </button>
           </nav>
+
+          {/* MODALS & DRAWERS (rendered inside the phone frame) */}
+
+          {/* 1. ONBOARDING & CONTEXT CREATION */}
+          <OnboardingModal
+            isOpen={isOnboardingModalOpen}
+            onComplete={handleOnboardingComplete}
+            onClosePreview={isOnboarded ? () => setIsOnboardingModalOpen(false) : undefined}
+            requiredReason={onboardingReason}
+          />
+
+          {/* 2. WANT TO CONNECT SIGNAL MODAL */}
+          <SignalModal
+            user={selectedUser}
+            currentUser={userProfile}
+            isOpen={isSignalOpen}
+            onClose={() => {
+              setIsSignalOpen(false);
+              setSelectedUser(null);
+            }}
+            onSendSignal={handleSendSignal}
+            dailySignalsRemaining={userProfile.dailySignalsLimit - userProfile.dailySignalsUsed}
+          />
+
+          {/* 3. STATUS & MOOD EDITOR (WINDOW) */}
+          <StatusMoodDrawer
+            currentUser={userProfile}
+            isOpen={isStatusMoodOpen}
+            onClose={() => setIsStatusMoodOpen(false)}
+            onUpdateStatusMood={(status, mood) => {
+              saveProfile({ status, mood });
+              showToast('Updated your Dublin presence status.');
+            }}
+          />
+
+          {/* 4. AURA SCORE BREAKDOWN */}
+          <AuraModal
+            isOpen={isAuraOpen}
+            onClose={() => setIsAuraOpen(false)}
+            currentUser={userProfile}
+            auraLogs={auraLogs}
+          />
+
+          {/* 7. PLUS (+) ACTION DRAWER: STATUS & MOOD, NEW PLACE, NEW OPPORTUNITY */}
+          <PlusActionDrawer
+            isOpen={isPlusActionOpen}
+            onClose={() => setIsPlusActionOpen(false)}
+            currentUser={userProfile}
+            onOpenStatusMood={() => setIsStatusMoodOpen(true)}
+            onOpenNewPlace={() => setIsAddPlaceOpen(true)}
+            onOpenNewOpportunity={() => setIsAddOpportunityOpen(true)}
+          />
+
+          {/* 8. ADD NEW PLACE MODAL */}
+          <AddPlaceModal
+            isOpen={isAddPlaceOpen}
+            onClose={() => setIsAddPlaceOpen(false)}
+            onAddPlace={handleAddPlace}
+            userDistrict={userProfile.district}
+          />
+
+          {/* 9. ADD NEW OPPORTUNITY MODAL */}
+          <AddOpportunityModal
+            isOpen={isAddOpportunityOpen}
+            onClose={() => setIsAddOpportunityOpen(false)}
+            onAddOpportunity={handleAddOpportunity}
+            userName={userProfile.name}
+            userDistrict={`${userProfile.district}, Dublin`}
+          />
         </div>
-
-      {/* MODALS & DRAWERS */}
-
-      {/* 1. ONBOARDING & CONTEXT CREATION */}
-      <OnboardingModal
-        isOpen={isOnboardingModalOpen}
-        onComplete={handleOnboardingComplete}
-        onClosePreview={isOnboarded ? () => setIsOnboardingModalOpen(false) : undefined}
-        requiredReason={onboardingReason}
-      />
-
-      {/* 2. WANT TO CONNECT SIGNAL MODAL */}
-      <SignalModal
-        user={selectedUser}
-        currentUser={userProfile}
-        isOpen={isSignalOpen}
-        onClose={() => {
-          setIsSignalOpen(false);
-          setSelectedUser(null);
-        }}
-        onSendSignal={handleSendSignal}
-        dailySignalsRemaining={userProfile.dailySignalsLimit - userProfile.dailySignalsUsed}
-      />
-
-      {/* 3. STATUS & MOOD EDITOR (WINDOW) */}
-      <StatusMoodDrawer
-        currentUser={userProfile}
-        isOpen={isStatusMoodOpen}
-        onClose={() => setIsStatusMoodOpen(false)}
-        onUpdateStatusMood={(status, mood) => {
-          saveProfile({ status, mood });
-          showToast('Updated your Dublin presence status.');
-        }}
-      />
-
-      {/* 4. AURA SCORE BREAKDOWN */}
-      <AuraModal
-        isOpen={isAuraOpen}
-        onClose={() => setIsAuraOpen(false)}
-        currentUser={userProfile}
-        auraLogs={auraLogs}
-      />
-
-      {/* 5. SIGNALS & RESONANCE (RESONANCE & REQUESTS) */}
-      <ChatDrawer
-        isOpen={isChatOpen}
-        onClose={() => {
-          setIsChatOpen(false);
-          setActiveTab('map');
-        }}
-        threads={chatThreads}
-        currentUser={userProfile}
-        nearbyUsers={NEARBY_DUBLIN_USERS}
-        dailySignalsRemaining={userProfile.dailySignalsLimit - userProfile.dailySignalsUsed}
-        onSendSignal={handleSendSignal}
-        onReplyThread={handleReplyThread}
-        onPolitelyDecline={handlePolitelyDecline}
-        onBlockReport={handleBlockReport}
-        onOpenStatusMood={() => {
-          setIsChatOpen(false);
-          setIsStatusMoodOpen(true);
-        }}
-      />
-
-      {/* 6. OPPORTUNITIES LIST */}
-      <OpportunitiesListModal
-        isOpen={isOpportunitiesOpen}
-        onClose={() => {
-          setIsOpportunitiesOpen(false);
-          setActiveTab('map');
-        }}
-        opportunities={opportunities}
-        onSelectOpportunity={(opp) => {
-          setSelectedOpportunity(opp);
-          setIsOpportunitiesOpen(false);
-          setActiveTab('map');
-        }}
-      />
-
-      {/* 7. PLUS (+) ACTION DRAWER: STATUS & MOOD, NEW PLACE, NEW OPPORTUNITY */}
-      <PlusActionDrawer
-        isOpen={isPlusActionOpen}
-        onClose={() => setIsPlusActionOpen(false)}
-        currentUser={userProfile}
-        onOpenStatusMood={() => setIsStatusMoodOpen(true)}
-        onOpenNewPlace={() => setIsAddPlaceOpen(true)}
-        onOpenNewOpportunity={() => setIsAddOpportunityOpen(true)}
-      />
-
-      {/* 8. ADD NEW PLACE MODAL */}
-      <AddPlaceModal
-        isOpen={isAddPlaceOpen}
-        onClose={() => setIsAddPlaceOpen(false)}
-        onAddPlace={handleAddPlace}
-        userDistrict={userProfile.district}
-      />
-
-      {/* 9. ADD NEW OPPORTUNITY MODAL */}
-      <AddOpportunityModal
-        isOpen={isAddOpportunityOpen}
-        onClose={() => setIsAddOpportunityOpen(false)}
-        onAddOpportunity={handleAddOpportunity}
-        userName={userProfile.name}
-        userDistrict={`${userProfile.district}, Dublin`}
-      />
-
-      {/* 10. PROFILE & CATEGORIES MODAL */}
-      <ProfileModal
-        isOpen={isProfileOpen}
-        onClose={() => {
-          setIsProfileOpen(false);
-          setActiveTab('map');
-        }}
-        user={userProfile}
-        auraLogs={auraLogs}
-        onUpdateVisibility={(level: VisibilityLevel) => {
-          saveProfile({ visibility: level });
-          showToast(`Visibility set to ${level}`);
-        }}
-        onOpenOnboardingEdit={() => {
-          setIsProfileOpen(false);
-          setIsOnboardingModalOpen(true);
-        }}
-        onOpenAura={() => {
-          setIsProfileOpen(false);
-          setIsAuraOpen(true);
-        }}
-      />
     </div>
   );
 }

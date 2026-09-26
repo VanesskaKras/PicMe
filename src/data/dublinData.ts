@@ -71,54 +71,55 @@ export const OFFERING_OPTIONS: string[] = [
   'Camera & Gear Lending',
 ];
 
+// Status colour follows discoveryWeight: high = people, normal = people-soft, low = subtle
 export const STATUS_PRESETS = [
   {
     id: 'open_connect',
     label: 'Open to Connect',
     description: 'Receptive to spontaneous nearby signals & light hellos',
-    color: '#00f0ff',
+    color: 'var(--color-people)',
     discoveryWeight: 'high' as const,
   },
   {
     id: 'working_focused',
     label: 'Working & Focused',
     description: 'Deep focus at a cafe or desk; open for quiet co-presence',
-    color: '#38bdf8',
+    color: 'var(--color-people-soft)',
     discoveryWeight: 'normal' as const,
   },
   {
     id: 'dog_walking',
     label: 'Walking the Dog',
     description: 'Cruising the canal or park; happy for puppy social circles',
-    color: '#10b981',
+    color: 'var(--color-people)',
     discoveryWeight: 'high' as const,
   },
   {
     id: 'sports_crew',
     label: 'Seeking Sports Crew',
     description: 'Up for a run around St. Stephen’s Green or climbing session',
-    color: '#ff2a85',
+    color: 'var(--color-people)',
     discoveryWeight: 'high' as const,
   },
   {
     id: 'exploring',
     label: 'Exploring Dublin',
     description: 'Wandering bookstores, historic alleys, and hidden spots',
-    color: '#fbbf24',
+    color: 'var(--color-people-soft)',
     discoveryWeight: 'normal' as const,
   },
   {
     id: 'busy_flow',
     label: 'Busy / In Flow',
     description: 'Muted radar; minimal signals filtered through',
-    color: '#94a3b8',
+    color: 'var(--color-subtle)',
     discoveryWeight: 'low' as const,
   },
   {
     id: 'job_hunting',
     label: 'Open to Opportunities',
     description: 'Looking for Dublin team openings, contracts, or gigs',
-    color: '#00e699',
+    color: 'var(--color-people)',
     discoveryWeight: 'high' as const,
   },
 ];

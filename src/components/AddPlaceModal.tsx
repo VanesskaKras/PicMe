@@ -20,11 +20,11 @@ interface AddPlaceModalProps {
 }
 
 const CATEGORIES: { id: DublinPlace['category']; label: string; icon: any; color: string }[] = [
-  { id: 'cafe', label: 'Cafe', icon: Coffee, color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' },
-  { id: 'pub', label: 'Pub', icon: Beer, color: 'text-orange-400 bg-orange-500/10 border-orange-500/30' },
-  { id: 'coworking', label: 'Coworking', icon: Laptop, color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' },
-  { id: 'culture', label: 'Culture', icon: Palette, color: 'text-pink-400 bg-pink-500/10 border-pink-500/30' },
-  { id: 'park', label: 'Park & Outdoors', icon: Trees, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' },
+  { id: 'cafe', label: 'Cafe', icon: Coffee, color: 'text-place-strong bg-place-soft border-place/30' },
+  { id: 'pub', label: 'Pub', icon: Beer, color: 'text-place-strong bg-place-soft border-place/30' },
+  { id: 'coworking', label: 'Coworking', icon: Laptop, color: 'text-place-strong bg-place-soft border-place/30' },
+  { id: 'culture', label: 'Culture', icon: Palette, color: 'text-place-strong bg-place-soft border-place/30' },
+  { id: 'park', label: 'Park & Outdoors', icon: Trees, color: 'text-place-strong bg-place-soft border-place/30' },
 ];
 
 const DUBLIN_DISTRICTS = [
@@ -95,6 +95,8 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
       lng: baseLng + offsetLng,
       auraScore: 90 + Math.floor(Math.random() * 8),
       tags,
+      createdByMe: true,
+      createdAt: Date.now(),
     };
 
     onAddPlace(newPlace);
@@ -107,22 +109,22 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in select-none">
-      <div className="relative w-full max-w-lg bg-[#0a0f24] border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="absolute inset-0 z-[70] flex items-end @md:items-center justify-center p-0 @md:p-4 bg-ink-strong/40 backdrop-blur-md animate-fade-in select-none">
+      <div className="relative w-full max-w-lg bg-white border-t @md:border border-line rounded-t-3xl @md:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-full">
         {/* Header */}
-        <div className="p-4 px-6 border-b border-slate-800/80 bg-[#0d1430]/80 flex items-center justify-between">
+        <div className="p-4 px-6 border-b border-line bg-card/80 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-pink-500/20 border border-pink-500/40 flex items-center justify-center text-pink-400">
+            <div className="w-8 h-8 rounded-xl bg-place-soft border border-place/30 flex items-center justify-center text-place-strong">
               <MapPin className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-white">Add New Place</h3>
-              <p className="text-[11px] text-slate-400">Broadcast a spot to the live Dublin radar</p>
+              <h3 className="font-bold text-base text-ink-strong">Add New Place</h3>
+              <p className="text-[11px] text-muted">Broadcast a spot to the live Dublin radar</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white"
+            className="w-8 h-8 rounded-full bg-card border border-line flex items-center justify-center text-muted hover:text-ink-strong"
           >
             <X className="w-4 h-4" />
           </button>
@@ -132,7 +134,7 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
         <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4 text-xs">
           {/* Place Name */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-300 mb-1.5">
+            <label className="block text-[11px] font-semibold text-muted mb-1.5">
               Place Name *
             </label>
             <input
@@ -141,16 +143,16 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Kaph Coffee, The Bernard Shaw, Canal Bench #4"
-              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-pink-500"
+              className="w-full px-3.5 py-2.5 bg-card border border-line rounded-xl text-ink-strong placeholder-subtle focus:outline-none focus:border-place"
             />
           </div>
 
           {/* Category Selector */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-300 mb-1.5">
+            <label className="block text-[11px] font-semibold text-muted mb-1.5">
               Category
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 @md:grid-cols-3 gap-2">
               {CATEGORIES.map((cat) => {
                 const Icon = cat.icon;
                 const isSelected = category === cat.id;
@@ -161,8 +163,8 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
                     onClick={() => setCategory(cat.id)}
                     className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all ${
                       isSelected
-                        ? `${cat.color} font-semibold ring-1 ring-pink-500`
-                        : 'bg-slate-900/90 border-slate-800 text-slate-400 hover:text-slate-200'
+                        ? `${cat.color} font-semibold ring-1 ring-place`
+                        : 'bg-card/90 border-line text-muted hover:text-ink-strong'
                     }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
@@ -174,15 +176,15 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
           </div>
 
           {/* District & Address */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 @md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-300 mb-1.5">
+              <label className="block text-[11px] font-semibold text-muted mb-1.5">
                 Dublin District
               </label>
               <select
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
-                className="w-full px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-pink-500 text-xs"
+                className="w-full px-3 py-2.5 bg-card border border-line rounded-xl text-ink-strong focus:outline-none focus:border-place text-xs"
               >
                 {DUBLIN_DISTRICTS.map((d) => (
                   <option key={d} value={d}>
@@ -193,7 +195,7 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-300 mb-1.5">
+              <label className="block text-[11px] font-semibold text-muted mb-1.5">
                 Street / Location
               </label>
               <input
@@ -201,14 +203,14 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="e.g. 14 South William St, D2"
-                className="w-full px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 text-xs"
+                className="w-full px-3 py-2.5 bg-card border border-line rounded-xl text-ink-strong placeholder-subtle focus:outline-none focus:border-place text-xs"
               />
             </div>
           </div>
 
           {/* Live Context / Atmosphere */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-300 mb-1.5">
+            <label className="block text-[11px] font-semibold text-muted mb-1.5">
               Live Vibe & Atmosphere Note
             </label>
             <textarea
@@ -216,13 +218,13 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
               value={liveContext}
               onChange={(e) => setLiveContext(e.target.value)}
               placeholder="e.g. Sun-drenched outdoor benches, fast WiFi, calm acoustic jazz background"
-              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 text-xs resize-none"
+              className="w-full px-3.5 py-2.5 bg-card border border-line rounded-xl text-ink-strong placeholder-subtle focus:outline-none focus:border-place text-xs resize-none"
             />
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-300 mb-1.5">
+            <label className="block text-[11px] font-semibold text-muted mb-1.5">
               Tags (comma-separated)
             </label>
             <input
@@ -230,7 +232,7 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               placeholder="Specialty Coffee, WiFi, Dog Friendly, Canal Walks"
-              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 text-xs"
+              className="w-full px-3.5 py-2.5 bg-card border border-line rounded-xl text-ink-strong placeholder-subtle focus:outline-none focus:border-place text-xs"
             />
           </div>
 
@@ -241,16 +243,16 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
               onClick={() => setIsQuietHour(!isQuietHour)}
               className={`p-2.5 rounded-xl border flex items-center justify-between text-left transition-colors ${
                 isQuietHour
-                  ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
-                  : 'bg-slate-900 border-slate-800 text-slate-400'
+                  ? 'bg-place-soft border-place/40 text-place-strong'
+                  : 'bg-card border-line text-muted'
               }`}
             >
               <div>
                 <span className="font-semibold block text-[11px]">Quiet Focus Zone</span>
-                <span className="text-[10px] text-slate-500">Low noise levels</span>
+                <span className="text-[10px] text-subtle">Low noise levels</span>
               </div>
               <div className={`w-4 h-4 rounded flex items-center justify-center border ${
-                isQuietHour ? 'bg-emerald-500 border-emerald-400 text-slate-950' : 'border-slate-700'
+                isQuietHour ? 'bg-place border-place text-ink-strong' : 'border-line'
               }`}>
                 {isQuietHour && <Check className="w-3 h-3 stroke-[3]" />}
               </div>
@@ -261,16 +263,16 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
               onClick={() => setHasLiveEvent(!hasLiveEvent)}
               className={`p-2.5 rounded-xl border flex items-center justify-between text-left transition-colors ${
                 hasLiveEvent
-                  ? 'bg-pink-500/10 border-pink-500/40 text-pink-300'
-                  : 'bg-slate-900 border-slate-800 text-slate-400'
+                  ? 'bg-people-soft border-people text-people-strong'
+                  : 'bg-card border-line text-muted'
               }`}
             >
               <div>
                 <span className="font-semibold block text-[11px]">Live Event Today</span>
-                <span className="text-[10px] text-slate-500">Music or meetups</span>
+                <span className="text-[10px] text-subtle">Music or meetups</span>
               </div>
               <div className={`w-4 h-4 rounded flex items-center justify-center border ${
-                hasLiveEvent ? 'bg-pink-500 border-pink-400 text-slate-950' : 'border-slate-700'
+                hasLiveEvent ? 'bg-people border-people text-ink-strong' : 'border-line'
               }`}>
                 {hasLiveEvent && <Check className="w-3 h-3 stroke-[3]" />}
               </div>
@@ -279,7 +281,7 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
 
           {hasLiveEvent && (
             <div>
-              <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+              <label className="block text-[11px] font-semibold text-muted mb-1">
                 Event Time / Detail
               </label>
               <input
@@ -287,7 +289,7 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
                 value={eventTime}
                 onChange={(e) => setEventTime(e.target.value)}
                 placeholder="e.g. 7:30 PM Acoustic Jam / Tech Demo"
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-pink-500"
+                className="w-full px-3 py-2 bg-card border border-line rounded-xl text-ink-strong text-xs focus:outline-none focus:border-place"
               />
             </div>
           )}
@@ -296,7 +298,7 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs shadow-lg shadow-pink-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+              className="w-full py-3 rounded-2xl bg-place hover:bg-place-hover text-ink-strong font-bold text-xs shadow-lg shadow-place/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
             >
               <Sparkles className="w-4 h-4" />
               <span>Broadcast Place to Dublin Radar (+15 Aura)</span>

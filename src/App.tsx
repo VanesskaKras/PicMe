@@ -14,7 +14,7 @@ import {
   Layers,
   MessageSquare,
   Home,
-  Briefcase,
+  List,
   Clock,
   ShieldCheck,
   Filter,
@@ -56,12 +56,23 @@ import { StatusMoodDrawer } from './components/StatusMoodDrawer';
 import { AuraModal } from './components/AuraModal';
 import { ChatDrawer } from './components/ChatDrawer';
 import { ItemDetailDrawer } from './components/ItemDetailDrawer';
-import { OpportunitiesListModal } from './components/OpportunitiesListModal';
+import { MapListModal } from './components/MapListModal';
+import {
+  PeopleFilter,
+  PlacesFilter,
+  OppsFilter,
+  PEOPLE_FILTER_OPTIONS,
+  PLACES_FILTER_OPTIONS,
+  OPPS_FILTER_OPTIONS,
+} from './components/mapFilters';
 import { ProfileModal, loadProfileSettings } from './components/ProfileModal';
 import { PlusActionDrawer } from './components/PlusActionDrawer';
 import { AddPlaceModal } from './components/AddPlaceModal';
 import { AddOpportunityModal } from './components/AddOpportunityModal';
 import { useI18n } from './i18n';
+
+// Demo "me" position on the map; the list view sorts by distance from here
+const MY_LOCATION = { lat: 53.3330, lng: -6.2655 };
 
 export default function App() {
   const { t } = useI18n();
@@ -146,9 +157,9 @@ export default function App() {
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState<boolean>(false);
 
   // Sub-category filters matching user specification
-  const [peopleFilter, setPeopleFilter] = useState<'all' | 'interests' | 'mood'>('all');
-  const [placesFilter, setPlacesFilter] = useState<'all' | 'cafe' | 'coworking' | 'sport' | 'culture'>('all');
-  const [oppsFilter, setOppsFilter] = useState<'all' | 'housing' | 'job' | 'collaboration' | 'activity'>('all');
+  const [peopleFilter, setPeopleFilter] = useState<PeopleFilter>('all');
+  const [placesFilter, setPlacesFilter] = useState<PlacesFilter>('all');
+  const [oppsFilter, setOppsFilter] = useState<OppsFilter>('all');
 
   // Filtered People based on peopleFilter
   const filteredPeople = React.useMemo(() => {
@@ -471,7 +482,7 @@ export default function App() {
                 setSelectedPlace(null);
               }}
               myVisibility={userProfile.visibility}
-              myLocation={{ lat: 53.3330, lng: -6.2655 }}
+              myLocation={MY_LOCATION}
               isOnboarded={isOnboarded}
               onRequireOnboarding={handleRequireOnboarding}
             />
@@ -512,11 +523,7 @@ export default function App() {
                       active: 'bg-people border-people text-ink-strong font-bold',
                       value: peopleFilter,
                       set: setPeopleFilter as (v: string) => void,
-                      options: [
-                        ['all', 'All Open'],
-                        ['interests', 'Matching Interests'],
-                        ['mood', 'Shared Mood'],
-                      ],
+                      options: PEOPLE_FILTER_OPTIONS,
                     },
                     {
                       label: 'Places',
@@ -524,13 +531,7 @@ export default function App() {
                       active: 'bg-place border-place text-ink-strong font-bold',
                       value: placesFilter,
                       set: setPlacesFilter as (v: string) => void,
-                      options: [
-                        ['all', 'All'],
-                        ['cafe', 'Coffee & Food'],
-                        ['coworking', 'Coworking'],
-                        ['sport', 'Sports'],
-                        ['culture', 'Culture'],
-                      ],
+                      options: PLACES_FILTER_OPTIONS,
                     },
                     {
                       label: 'Opportunities',
@@ -538,13 +539,7 @@ export default function App() {
                       active: 'bg-opp border-opp text-ink-strong font-bold',
                       value: oppsFilter,
                       set: setOppsFilter as (v: string) => void,
-                      options: [
-                        ['all', 'All'],
-                        ['housing', 'Housing (714)'],
-                        ['job', 'Jobs (1154)'],
-                        ['collaboration', 'Collaborations'],
-                        ['activity', 'Activities'],
-                      ],
+                      options: OPPS_FILTER_OPTIONS,
                     },
                   ].map((row) => (
                     <div key={row.label} className="space-y-1.5">
@@ -616,13 +611,37 @@ export default function App() {
               onOpenStatusMood={() => setIsStatusMoodOpen(true)}
             />
 
-            {/* OPPORTUNITIES SCREEN */}
-            <OpportunitiesListModal
+            {/* LIST SCREEN: everything currently on the map, as a list */}
+            <MapListModal
               isOpen={activeTab === 'opportunities'}
               onClose={() => setActiveTab('map')}
-              opportunities={opportunities}
-              onSelectOpportunity={(opp) => {
-                setSelectedOpportunity(opp);
+              people={filteredPeople}
+              places={filteredPlaces}
+              opportunities={filteredOpportunities}
+              myLocation={MY_LOCATION}
+              peopleFilter={peopleFilter}
+              placesFilter={placesFilter}
+              oppsFilter={oppsFilter}
+              onPeopleFilterChange={setPeopleFilter}
+              onPlacesFilterChange={setPlacesFilter}
+              onOppsFilterChange={setOppsFilter}
+              onSelectUser={(u) => {
+                setSelectedUser(u);
+                setSelectedPlace(null);
+                setSelectedOpportunity(null);
+                setIsSignalOpen(true);
+                setActiveTab('map');
+              }}
+              onSelectPlace={(p) => {
+                setSelectedPlace(p);
+                setSelectedUser(null);
+                setSelectedOpportunity(null);
+                setActiveTab('map');
+              }}
+              onSelectOpportunity={(o) => {
+                setSelectedOpportunity(o);
+                setSelectedUser(null);
+                setSelectedPlace(null);
                 setActiveTab('map');
               }}
             />
@@ -664,8 +683,8 @@ export default function App() {
             />
           </div>
 
-          {/* BOTTOM NAVIGATION TAB BAR (5 ITEMS: MAP, OPPORTUNITIES, +, SIGNALS, PROFILE) */}
-          {/* Active tab takes its layer colour (map/profile = ink, opportunities = opp, signals = people). Inactive: subtle. */}
+          {/* BOTTOM NAVIGATION TAB BAR (5 ITEMS: MAP, LIST, +, SIGNALS, PROFILE) */}
+          {/* Active tab takes its layer colour (map/list/profile = ink, signals = people). Inactive: subtle. */}
           <nav className="h-16 px-2 bg-white border-t border-line shadow-[0_-4px_12px_rgba(31,42,16,0.06)] grid grid-cols-5 items-center z-20 shrink-0 select-none">
             {/* TAB 1: MAP */}
             <button
@@ -676,16 +695,13 @@ export default function App() {
               <span className={`text-[11px] mt-1 ${activeTab === 'map' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>{t('Map')}</span>
             </button>
 
-            {/* TAB 2: OPPORTUNITIES */}
+            {/* TAB 2: LIST (everything on the map) */}
             <button
               onClick={() => handleTabChange('opportunities')}
               className="flex flex-col items-center justify-center transition-colors group"
             >
-              <span className="relative">
-                <Briefcase className={`w-5 h-5 ${activeTab === 'opportunities' ? 'text-opp-strong' : 'text-subtle group-hover:text-muted'}`} />
-                <span className="absolute -top-1 -right-2.5 w-2 h-2 rounded-full bg-opp" />
-              </span>
-              <span className={`text-[11px] mt-1 ${activeTab === 'opportunities' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>{t('Opportunities')}</span>
+              <List className={`w-5 h-5 ${activeTab === 'opportunities' ? 'text-ink' : 'text-subtle group-hover:text-muted'}`} />
+              <span className={`text-[11px] mt-1 ${activeTab === 'opportunities' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>{t('List')}</span>
             </button>
 
             {/* TAB 3: PLUS ACTION BUTTON (+) */}

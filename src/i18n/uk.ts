@@ -408,6 +408,13 @@ export const uk: Record<string, string> = {
   'Save Opportunity': 'Зберегти можливість',
 
   // ── Opportunities list ──
+  'List': 'Список',
+  'Map filters are applied': 'Застосовано фільтри мапи',
+  'Search people, places, opportunities...': 'Шукайте людей, місця, можливості...',
+  'Nothing here yet': 'Тут поки нічого немає',
+  'Try another tab, clear the search or change map filters': 'Спробуйте іншу вкладку, очистіть пошук або змініть фільтри мапи',
+  '{n} m': '{n} м',
+  '{n} km': '{n} км',
   'Opportunities Layer': 'Можливості',
   'Live housing leases, verified PubJobs, and peer activities': 'Актуальне житло, перевірені вакансії та активності',
   'Search rentals (e.g. Portobello), tech jobs, runs...': 'Шукайте житло (напр. Portobello), IT-вакансії, пробіжки...',

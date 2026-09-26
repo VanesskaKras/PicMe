@@ -23,7 +23,8 @@ interface ItemDetailDrawerProps {
   place: DublinPlace | null;
   opportunity: DublinOpportunity | null;
   onClose: () => void;
-  onBookmark?: (title: string) => void;
+  isSaved?: boolean;
+  onBookmark?: () => void;
   onAction?: (msg: string) => void;
 }
 
@@ -31,6 +32,7 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
   place,
   opportunity,
   onClose,
+  isSaved = false,
   onBookmark,
   onAction,
 }) => {
@@ -119,11 +121,12 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
                 {t('Navigate')}
               </button>
               <button
-                onClick={() => onBookmark?.(place.name)}
-                className="px-3.5 py-2.5 rounded-xl bg-card border border-line text-muted hover:text-ink-strong flex items-center justify-center"
-                title={t('Bookmark Place')}
+                onClick={onBookmark}
+                aria-pressed={isSaved}
+                className={`px-3.5 py-2.5 rounded-xl border flex items-center justify-center ${isSaved ? 'bg-ink border-ink text-white' : 'bg-card border-line text-muted hover:text-ink-strong'}`}
+                title={isSaved ? t('Remove from saved') : t('Bookmark Place')}
               >
-                <Bookmark className="w-4 h-4" />
+                <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
               </button>
             </div>
           </div>
@@ -203,11 +206,12 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
                 {opportunity.type === 'housing' ? t('Contact Resident / Landlord') : opportunity.type === 'job' ? t('Apply via Network') : t('Join Activity Circle')}
               </button>
               <button
-                onClick={() => onBookmark?.(opportunity.title)}
-                className="px-3.5 py-2.5 rounded-xl bg-card border border-line text-muted hover:text-ink-strong flex items-center justify-center"
-                title={t('Save Opportunity')}
+                onClick={onBookmark}
+                aria-pressed={isSaved}
+                className={`px-3.5 py-2.5 rounded-xl border flex items-center justify-center ${isSaved ? 'bg-ink border-ink text-white' : 'bg-card border-line text-muted hover:text-ink-strong'}`}
+                title={isSaved ? t('Remove from saved') : t('Save Opportunity')}
               >
-                <Bookmark className="w-4 h-4" />
+                <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
               </button>
             </div>
           </div>

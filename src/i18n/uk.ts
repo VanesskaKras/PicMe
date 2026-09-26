@@ -76,6 +76,8 @@ export const uk: Record<string, string> = {
   'Published opportunity "{title}"': 'Опублікував(-ла) можливість «{title}»',
   '⚡ Opportunity "{title}" published! (+25 Aura)': '⚡ Можливість «{title}» опубліковано! (+25 Аури)',
   'Saved "{title}" to your collection.': '«{title}» збережено у вашу колекцію.',
+  'Removed "{title}" from saved.': '«{title}» прибрано зі збережених.',
+  'Remove from saved': 'Прибрати зі збережених',
   'Visibility set to {level}': 'Видимість: {level}',
   'Mood extended by 1 hour': 'Настрій продовжено на 1 годину',
   'Updated your presence status.': 'Ваш статус присутності оновлено.',
@@ -409,6 +411,16 @@ export const uk: Record<string, string> = {
 
   // ── Opportunities list ──
   'List': 'Список',
+
+  // ── Welcome screen ──
+  "See what's happening around you in Dublin.": 'Дивіться, що відбувається навколо вас у Дубліні.',
+  'People nearby who are open to meet.': 'Люди поруч, які відкриті до знайомства.',
+  'Places and events worth going to.': 'Місця й події, куди варто піти.',
+  'Housing, jobs and offers in your area.': 'Житло, робота та пропозиції у вашому районі.',
+  'No random messages. No endless chats.': 'Жодних випадкових повідомлень. Жодних безкінечних чатів.',
+  'Just a light wave when you have something in common.': 'Лише легкий помах, коли у вас є щось спільне.',
+  'You decide who sees you, and how close.': 'Ви вирішуєте, хто вас бачить і наскільки близько.',
+  'Get started': 'Почати',
   'Map filters are applied': 'Застосовано фільтри мапи',
   'Search people, places, opportunities...': 'Шукайте людей, місця, можливості...',
   'Nothing here yet': 'Тут поки нічого немає',
@@ -538,6 +550,8 @@ export const uk: Record<string, string> = {
   'Event · fades in {time}': 'Подія · зникне через {time}',
   'Place · event {time}': 'Місце · подія {time}',
   'Place · {district}': 'Місце · {district}',
+  'Saved': 'Збережені',
+  'Nothing saved yet. Tap the bookmark on a place or event to keep it here.': 'Поки нічого не збережено. Натисніть закладку на місці чи події, щоб вона з’явилася тут.',
   'How others see me': 'Як мене бачать інші',
   'How people nearby see you': 'Як вас бачать люди поруч',
   "You're invisible": 'Ви невидимі',

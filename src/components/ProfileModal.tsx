@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Award,
   Bell,
+  Bookmark,
   Briefcase,
   CalendarDays,
   ChevronLeft,
@@ -26,6 +27,11 @@ import { useI18n, LANGUAGES, TFunction } from '../i18n';
 export interface ProfileSettings {
   notifications: { signals: boolean; moodExpiring: boolean; opportunitiesNearby: boolean };
   defaultLayers: { people: boolean; places: boolean; opportunities: boolean };
+}
+
+export interface SavedItems {
+  places: string[];
+  opportunities: string[];
 }
 
 export const DEFAULT_PROFILE_SETTINGS: ProfileSettings = {
@@ -54,6 +60,7 @@ interface ProfileModalProps {
   user: UserProfile;
   places: DublinPlace[];
   opportunities: DublinOpportunity[];
+  saved: SavedItems;
   onUpdateVisibility: (level: VisibilityLevel) => void;
   onOpenOnboardingEdit: () => void;
   onOpenAura: () => void;
@@ -115,6 +122,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   user,
   places,
   opportunities,
+  saved,
   onUpdateVisibility,
   onOpenOnboardingEdit,
   onOpenAura,
@@ -172,6 +180,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const myPlaces = places.filter((p) => p.createdByMe);
   const myPlaceEvents = myPlaces.filter((p) => p.hasLiveEvent);
   const presenceCount = myAnnouncements.length + myEvents.length + myPlaces.length;
+
+  // Bookmarked items, newest first; IDs whose item no longer exists are skipped
+  const savedOpps = saved.opportunities
+    .map((id) => opportunities.find((o) => o.id === id))
+    .filter((o): o is DublinOpportunity => !!o);
+  const savedPlaces = saved.places
+    .map((id) => places.find((p) => p.id === id))
+    .filter((p): p is DublinPlace => !!p);
 
   const distanceLine: Record<VisibilityLevel, string> = {
     exact: t('≈ 120 m away · exact spot'),
@@ -489,6 +505,48 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     <div className="text-sm font-semibold text-ink-strong truncate">{place.name}</div>
                     <div className="text-[11px] text-muted truncate">
                       {myPlaceEvents.includes(place) ? t('Place · event {time}', { time: place.eventTime ?? t('today') }) : t('Place · {district}', { district: place.district })}
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted shrink-0" />
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Saved */}
+        <section>
+          <SectionTitle>{t('Saved')}</SectionTitle>
+          {savedOpps.length + savedPlaces.length === 0 ? (
+            <div className="rounded-3xl bg-card border border-line p-4 text-xs text-muted flex items-start gap-2">
+              <Bookmark className="w-4 h-4 shrink-0" />
+              {t('Nothing saved yet. Tap the bookmark on a place or event to keep it here.')}
+            </div>
+          ) : (
+            <div className="rounded-3xl bg-card border border-line divide-y divide-line">
+              {savedOpps.map((opp) => (
+                <button key={opp.id} onClick={() => onShowOpportunity(opp)} className="w-full px-3.5 py-3 flex items-center gap-3 text-left">
+                  <span className="w-9 h-9 rounded-full bg-opp flex items-center justify-center shrink-0 text-ink-strong">
+                    {opp.type === 'activity' ? <CalendarDays className="w-4 h-4" /> : opp.type === 'job' ? <Briefcase className="w-4 h-4" /> : <Megaphone className="w-4 h-4" />}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-ink-strong truncate">{opp.title}</div>
+                    <div className="text-[11px] text-muted truncate">
+                      {t(opp.categoryTag)} · {opp.district}
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted shrink-0" />
+                </button>
+              ))}
+              {savedPlaces.map((place) => (
+                <button key={place.id} onClick={() => onShowPlace(place)} className="w-full px-3.5 py-3 flex items-center gap-3 text-left">
+                  <span className="w-9 h-9 rounded-full bg-place flex items-center justify-center shrink-0 text-ink-strong">
+                    {place.hasLiveEvent ? <CalendarDays className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-ink-strong truncate">{place.name}</div>
+                    <div className="text-[11px] text-muted truncate">
+                      {place.hasLiveEvent ? t('Place · event {time}', { time: place.eventTime ?? t('today') }) : t('Place · {district}', { district: place.district })}
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted shrink-0" />

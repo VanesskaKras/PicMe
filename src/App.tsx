@@ -65,7 +65,7 @@ import {
   PLACES_FILTER_OPTIONS,
   OPPS_FILTER_OPTIONS,
 } from './components/mapFilters';
-import { ProfileModal, loadProfileSettings } from './components/ProfileModal';
+import { ProfileModal, loadProfileSettings, SavedItems } from './components/ProfileModal';
 import { PlusActionDrawer } from './components/PlusActionDrawer';
 import { AddPlaceModal } from './components/AddPlaceModal';
 import { AddOpportunityModal } from './components/AddOpportunityModal';
@@ -150,6 +150,15 @@ export default function App() {
       } catch (e) {}
     }
     return DUBLIN_OPPORTUNITIES;
+  });
+
+  // Bookmarked places & opportunities (IDs only, persisted on this device)
+  const [saved, setSaved] = useState<SavedItems>(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem('picme_saved') || 'null');
+      if (parsed) return { places: parsed.places ?? [], opportunities: parsed.opportunities ?? [] };
+    } catch (e) {}
+    return { places: [], opportunities: [] };
   });
 
   // Category Tag Filter & Sliders Menu State
@@ -385,6 +394,20 @@ export default function App() {
     setIsFilterMenuOpen(false);
   };
 
+  // Bookmark toggle for the detail sheet
+  const toggleSaved = (kind: keyof SavedItems, id: string, title: string) => {
+    const wasSaved = saved[kind].includes(id);
+    const next = {
+      ...saved,
+      [kind]: wasSaved ? saved[kind].filter((x) => x !== id) : [id, ...saved[kind]],
+    };
+    setSaved(next);
+    try {
+      localStorage.setItem('picme_saved', JSON.stringify(next));
+    } catch (e) {}
+    showToast(wasSaved ? t('Removed "{title}" from saved.', { title }) : t('Saved "{title}" to your collection.', { title }));
+  };
+
   // Add Place to live radar
   const handleAddPlace = (newPlace: DublinPlace) => {
     setPlaces((prev) => {
@@ -592,7 +615,15 @@ export default function App() {
                 setSelectedPlace(null);
                 setSelectedOpportunity(null);
               }}
-              onBookmark={(title) => showToast(t('Saved "{title}" to your collection.', { title }))}
+              isSaved={
+                selectedPlace
+                  ? saved.places.includes(selectedPlace.id)
+                  : !!selectedOpportunity && saved.opportunities.includes(selectedOpportunity.id)
+              }
+              onBookmark={() => {
+                if (selectedPlace) toggleSaved('places', selectedPlace.id, selectedPlace.name);
+                else if (selectedOpportunity) toggleSaved('opportunities', selectedOpportunity.id, selectedOpportunity.title);
+              }}
               onAction={(msg) => showToast(msg)}
             />
 
@@ -653,6 +684,7 @@ export default function App() {
               user={userProfile}
               places={places}
               opportunities={opportunities}
+              saved={saved}
               onUpdateVisibility={(level: VisibilityLevel) => {
                 saveProfile({ visibility: level });
                 showToast(t('Visibility set to {level}', { level: t(({ exact: 'Point', zone: 'Zone', district: 'District', invisible: 'Invisible' } as const)[level]).toLowerCase() }));
@@ -747,6 +779,7 @@ export default function App() {
             onComplete={handleOnboardingComplete}
             onClosePreview={isOnboarded ? () => setIsOnboardingModalOpen(false) : undefined}
             requiredReason={onboardingReason}
+            showWelcome={!isOnboarded}
           />
 
           {/* 2. WANT TO CONNECT SIGNAL MODAL */}

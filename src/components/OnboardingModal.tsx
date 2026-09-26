@@ -7,7 +7,11 @@ import {
   MapPin,
   Eye,
   Info,
-  ChevronLeft
+  ChevronLeft,
+  Users,
+  Briefcase,
+  Hand,
+  Lock
 } from 'lucide-react';
 import {
   IDENTITY_OPTIONS,
@@ -24,6 +28,8 @@ interface OnboardingModalProps {
   onComplete: (profile: Partial<UserProfile>) => void;
   onClosePreview?: () => void;
   requiredReason?: string | null;
+  // First-time registration: open with the welcome screen before the profile steps
+  showWelcome?: boolean;
 }
 
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({
@@ -31,8 +37,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   onComplete,
   onClosePreview,
   requiredReason,
+  showWelcome,
 }) => {
   const { t } = useI18n();
+  const [welcomeDone, setWelcomeDone] = useState<boolean>(false);
   const [step, setStep] = useState<number>(0);
   // Profile state
   const [name, setName] = useState<string>('Alex Brennan');
@@ -106,6 +114,68 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       isOnboarded: true,
     });
   };
+
+  if (showWelcome && !welcomeDone) {
+    const features = [
+      { icon: Users, tint: 'bg-people-soft text-people-strong', text: 'People nearby who are open to meet.' },
+      { icon: MapPin, tint: 'bg-place-soft text-place-strong', text: 'Places and events worth going to.' },
+      { icon: Briefcase, tint: 'bg-opp-soft text-opp-strong', text: 'Housing, jobs and offers in your area.' },
+    ];
+
+    return (
+      <div className="absolute inset-0 z-50 flex items-center justify-center p-3 bg-ink-strong/40 backdrop-blur-md animate-fade-in">
+        <div className="relative w-full max-w-lg bg-white border border-line rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-full">
+          <div className="p-6 overflow-y-auto overscroll-contain space-y-6 flex-1 min-h-0">
+            <div className="space-y-4 pt-2">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-people via-opp to-place p-[2px] shadow-lg shadow-people/20">
+                <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-sm font-bold text-ink-strong">
+                  PM
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight text-ink-strong leading-tight">
+                {t("See what's happening around you in Dublin.")}
+              </h2>
+            </div>
+
+            <div className="space-y-2.5">
+              {features.map(({ icon: Icon, tint, text }) => (
+                <div key={text} className="flex items-center gap-3">
+                  <span className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${tint}`}>
+                    <Icon className="w-4 h-4" />
+                  </span>
+                  <span className="text-sm text-ink-strong font-medium">{t(text)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-4 rounded-2xl bg-card border border-line flex items-start gap-3">
+              <Hand className="w-4 h-4 text-ink mt-0.5 shrink-0" />
+              <p className="text-sm text-muted leading-relaxed">
+                {t('No random messages. No endless chats.')}
+                <br />
+                {t('Just a light wave when you have something in common.')}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 text-sm text-muted">
+              <Lock className="w-4 h-4 text-ink shrink-0" />
+              <span>{t('You decide who sees you, and how close.')}</span>
+            </div>
+          </div>
+
+          <div className="px-6 py-4 border-t border-line bg-card/70">
+            <button
+              onClick={() => setWelcomeDone(true)}
+              className="w-full px-5 py-3 rounded-xl bg-opp hover:bg-opp-hover text-ink-strong font-bold text-sm transition-all shadow-lg shadow-opp/30 flex items-center justify-center gap-2"
+            >
+              {t('Get started')}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center p-3 bg-ink-strong/40 backdrop-blur-md animate-fade-in">

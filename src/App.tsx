@@ -24,7 +24,8 @@ import {
   SlidersHorizontal,
   Plus,
   Store,
-  Zap
+  Zap,
+  UserRound
 } from 'lucide-react';
 
 import {
@@ -755,9 +756,7 @@ export default function App() {
               onClick={() => handleTabChange('profile')}
               className="flex flex-col items-center justify-center transition-colors group"
             >
-              <div className={`w-5 h-5 rounded-full overflow-hidden border ${activeTab === 'profile' ? 'border-ink' : 'border-line'}`}>
-                <img src={userProfile.avatarUrl} alt="Me" className="w-full h-full object-cover" />
-              </div>
+              <UserRound className={`w-5 h-5 ${activeTab === 'profile' ? 'text-ink' : 'text-subtle group-hover:text-muted'}`} />
               <span className={`text-[11px] mt-1 ${activeTab === 'profile' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>Profile</span>
             </button>
           </nav>

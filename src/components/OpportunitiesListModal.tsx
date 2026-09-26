@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { DublinOpportunity } from '../types';
 import { GraphicIcon } from './GraphicIcon';
+import { useI18n } from '../i18n';
 
 interface OpportunitiesListModalProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export const OpportunitiesListModal: React.FC<OpportunitiesListModalProps> = ({
   opportunities,
   onSelectOpportunity,
 }) => {
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<'all' | 'housing' | 'job' | 'activity'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -40,6 +42,7 @@ export const OpportunitiesListModal: React.FC<OpportunitiesListModalProps> = ({
         opp.title.toLowerCase().includes(q) ||
         opp.district.toLowerCase().includes(q) ||
         opp.categoryTag.toLowerCase().includes(q) ||
+        t(opp.categoryTag).toLowerCase().includes(q) ||
         opp.description.toLowerCase().includes(q)
       );
     }
@@ -55,11 +58,11 @@ export const OpportunitiesListModal: React.FC<OpportunitiesListModalProps> = ({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-opp animate-pulse" />
               <h3 className="text-base font-bold text-ink-strong tracking-tight">
-                Dublin Opportunities Layer
+                {t('Opportunities Layer')}
               </h3>
             </div>
             <p className="text-xs text-muted mt-0.5">
-              Live Dublin housing leases, verified PubJobs, and peer activities
+              {t('Live housing leases, verified PubJobs, and peer activities')}
             </p>
           </div>
         </div>
@@ -72,7 +75,7 @@ export const OpportunitiesListModal: React.FC<OpportunitiesListModalProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search Dublin rentals (e.g. Portobello), tech jobs, runs..."
+              placeholder={t('Search rentals (e.g. Portobello), tech jobs, runs...')}
               className="w-full pl-10 pr-4 py-2 rounded-xl bg-card/90 border border-line text-xs text-ink-strong placeholder-subtle focus:outline-none focus:border-opp"
             />
           </div>
@@ -93,7 +96,7 @@ export const OpportunitiesListModal: React.FC<OpportunitiesListModalProps> = ({
                     : 'text-muted hover:text-ink-strong'
                 }`}
               >
-                {tab.label}
+                {t(tab.label)}
               </button>
             ))}
           </div>
@@ -118,7 +121,7 @@ export const OpportunitiesListModal: React.FC<OpportunitiesListModalProps> = ({
                     </span>
                     <div>
                       <span className="text-[10px] font-mono uppercase text-opp-strong font-bold">
-                        {opp.categoryTag}
+                        {t(opp.categoryTag)}
                       </span>
                       <h4 className="text-sm font-bold text-ink-strong group-hover:text-opp-strong transition-colors">
                         {opp.title}
@@ -144,7 +147,7 @@ export const OpportunitiesListModal: React.FC<OpportunitiesListModalProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="flex items-center gap-1 text-warning font-mono text-[10px]">
                       <Clock className="w-3 h-3" />
-                      {opp.expiresInDays}d left
+                      {t('{n}d left', { n: opp.expiresInDays })}
                     </span>
                     <span className="text-muted group-hover:translate-x-0.5 transition-transform">
                       <ChevronRight className="w-4 h-4 text-opp-strong" />
@@ -155,8 +158,8 @@ export const OpportunitiesListModal: React.FC<OpportunitiesListModalProps> = ({
             ))
           ) : (
             <div className="py-12 text-center text-subtle space-y-1">
-              <p className="text-sm font-semibold">No opportunities matching query</p>
-              <p className="text-xs">Try switching tabs or clearing filters</p>
+              <p className="text-sm font-semibold">{t('No opportunities matching query')}</p>
+              <p className="text-xs">{t('Try switching tabs or clearing filters')}</p>
             </div>
           )}
         </div>

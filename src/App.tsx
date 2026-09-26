@@ -61,8 +61,11 @@ import { ProfileModal, BlockedPerson, loadProfileSettings } from './components/P
 import { PlusActionDrawer } from './components/PlusActionDrawer';
 import { AddPlaceModal } from './components/AddPlaceModal';
 import { AddOpportunityModal } from './components/AddOpportunityModal';
+import { useI18n } from './i18n';
 
 export default function App() {
+  const { t } = useI18n();
+
   // Check localStorage for onboarding state
   const [isOnboarded, setIsOnboarded] = useState<boolean>(() => {
     return localStorage.getItem('picme_onboarded') === 'true';
@@ -130,7 +133,7 @@ export default function App() {
     localStorage.setItem('picme_blocked', JSON.stringify(list));
   };
 
-  // Places & Opportunities (persisted with initial Dublin defaults)
+  // Places & Opportunities (persisted with initial defaults)
   const [places, setPlaces] = useState<DublinPlace[]>(() => {
     const saved = localStorage.getItem('picme_places');
     if (saved) {
@@ -271,7 +274,7 @@ export default function App() {
     });
     setIsOnboardingModalOpen(false);
     setOnboardingReason(null);
-    showToast('✨ Welcome to PicMe Dublin! Your urban resonance radar is now active.');
+    showToast(t('✨ Welcome to PicMe! Your urban resonance radar is now active.'));
   };
 
   // Require Onboarding Prompt
@@ -283,7 +286,7 @@ export default function App() {
   // Handle Sending Signal
   const handleSendSignal = (targetUser: NearbyDublinUser, note?: string) => {
     if (userProfile.dailySignalsUsed >= userProfile.dailySignalsLimit) {
-      showToast('Daily signal limit reached (10/10). Resets tomorrow morning.');
+      showToast(t('Daily signal limit reached (10/10). Resets tomorrow morning.'));
       return;
     }
 
@@ -294,9 +297,9 @@ export default function App() {
 
     const newLog: AuraLog = {
       id: `log-${Date.now()}`,
-      action: `Radiated intentional connection signal to ${targetUser.name}`,
+      action: t('Radiated intentional connection signal to {name}', { name: targetUser.name }),
       delta: +10,
-      timestamp: 'Just now',
+      timestamp: t('Just now'),
       type: 'gain',
     };
     setAuraLogs((prev) => [newLog, ...prev]);
@@ -309,34 +312,34 @@ export default function App() {
       peerAvatar: targetUser.avatarUrl,
       peerStatus: targetUser.status,
       stage: 'delivered',
-      deliveredTime: 'Just now',
-      previewSecretText: 'New Intentional Signal Radiated',
-      fullMessage: note || 'Saw your vibe on Dublin map · Up to connect!',
+      deliveredTime: t('Just now'),
+      previewSecretText: t('New Intentional Signal Radiated'),
+      fullMessage: note || t('Saw your vibe on the map · Up to connect!'),
       timerSecondsRemaining: 7200,
       history: [
         {
           sender: 'me',
-          text: note || 'Saw your vibe on Dublin map · Up to connect!',
-          time: 'Just now',
+          text: note || t('Saw your vibe on the map · Up to connect!'),
+          time: t('Just now'),
         },
       ],
     };
     setChatThreads((prev) => [newThread, ...prev]);
-    showToast(`Signal radiated to ${targetUser.name}! Opening polite mutual window.`);
+    showToast(t('Signal radiated to {name}! Opening polite mutual window.', { name: targetUser.name }));
   };
 
   // Handle Chat Reply
   const handleReplyThread = (threadId: string, text: string) => {
     setChatThreads((prev) =>
-      prev.map((t) => {
-        if (t.id === threadId) {
+      prev.map((thread) => {
+        if (thread.id === threadId) {
           return {
-            ...t,
+            ...thread,
             stage: 'replied',
-            history: [...t.history, { sender: 'me', text, time: 'Just now' }],
+            history: [...thread.history, { sender: 'me', text, time: t('Just now') }],
           };
         }
-        return t;
+        return thread;
       })
     );
 
@@ -344,15 +347,15 @@ export default function App() {
     setAuraLogs((prev) => [
       {
         id: `log-${Date.now()}`,
-        action: 'Promptly responded to Dublin connection dialogue',
+        action: t('Promptly responded to connection dialogue'),
         delta: +20,
-        timestamp: 'Just now',
+        timestamp: t('Just now'),
         type: 'gain',
       },
       ...prev,
     ]);
 
-    showToast('Reply sent! +20 Aura awarded for prompt Dublin communication.');
+    showToast(t('Reply sent! +20 Aura awarded for prompt communication.'));
   };
 
   // Handle Polite Pass / Decline
@@ -362,14 +365,14 @@ export default function App() {
     setAuraLogs((prev) => [
       {
         id: `log-${Date.now()}`,
-        action: 'Politely closed dialogue without ghosting ("Not right now")',
+        action: t('Politely closed dialogue without ghosting ("Not right now")'),
         delta: +5,
-        timestamp: 'Just now',
+        timestamp: t('Just now'),
         type: 'gain',
       },
       ...prev,
     ]);
-    showToast('Dialogue respectfully closed. +5 Aura awarded for courtesy.');
+    showToast(t('Dialogue respectfully closed. +5 Aura awarded for courtesy.'));
   };
 
   // Handle Block / Report
@@ -379,7 +382,7 @@ export default function App() {
       saveBlocked([...blockedPeople, { id: thread.peerId, name: thread.peerName, avatar: thread.peerAvatar }]);
     }
     setChatThreads((prev) => prev.filter((t) => t.id !== threadId));
-    showToast('Contact muted. Your Aura remains fully protected.');
+    showToast(t('Contact muted. Your Aura remains fully protected.'));
   };
 
   // Switch Bottom Tab
@@ -400,9 +403,9 @@ export default function App() {
     setAuraLogs((prev) => [
       {
         id: `log-${Date.now()}`,
-        action: `Broadcasted new spot "${newPlace.name}" to Dublin radar`,
+        action: t('Broadcasted new spot "{name}" to the radar', { name: newPlace.name }),
         delta: +15,
-        timestamp: 'Just now',
+        timestamp: t('Just now'),
         type: 'gain',
       },
       ...prev,
@@ -412,7 +415,7 @@ export default function App() {
     setSelectedOpportunity(null);
     setSelectedUser(null);
     setActiveTab('map');
-    showToast(`📍 "${newPlace.name}" placed on Dublin radar! (+15 Aura)`);
+    showToast(t('📍 "{name}" placed on the radar! (+15 Aura)', { name: newPlace.name }));
   };
 
   // Add Opportunity to live radar
@@ -427,9 +430,9 @@ export default function App() {
     setAuraLogs((prev) => [
       {
         id: `log-${Date.now()}`,
-        action: `Published Dublin opportunity "${newOpp.title}"`,
+        action: t('Published opportunity "{title}"', { title: newOpp.title }),
         delta: +25,
-        timestamp: 'Just now',
+        timestamp: t('Just now'),
         type: 'gain',
       },
       ...prev,
@@ -439,7 +442,7 @@ export default function App() {
     setSelectedPlace(null);
     setSelectedUser(null);
     setActiveTab('map');
-    showToast(`⚡ Opportunity "${newOpp.title}" published! (+25 Aura)`);
+    showToast(t('⚡ Opportunity "{title}" published! (+25 Aura)', { title: newOpp.title }));
   };
 
   return (
@@ -460,7 +463,7 @@ export default function App() {
           {/* Dynamic Island pill */}
           <div className="w-24 h-4 bg-ink-strong rounded-full shadow-inner flex items-center justify-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-opp animate-ping" />
-            <span className="text-[9px] text-opp font-mono">Dublin Active</span>
+            <span className="text-[9px] text-opp font-mono">{t('Active')}</span>
           </div>
           <div className="flex items-center gap-1 font-mono text-[10px]">
             <span>5G</span>
@@ -510,7 +513,7 @@ export default function App() {
             <button
               onClick={() => setIsFilterMenuOpen(true)}
               className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-white text-ink shadow-lg shadow-ink-strong/15 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
-              title="Layers & Filters"
+              title={t('Layers & Filters')}
             >
               <SlidersHorizontal className="w-4 h-4" />
               {(peopleFilter !== 'all' || placesFilter !== 'all' || oppsFilter !== 'all') && (
@@ -524,11 +527,11 @@ export default function App() {
                 <div className="absolute inset-0 z-30 bg-black/30 fade-in" onClick={() => setIsFilterMenuOpen(false)} />
                 <div className="absolute top-0 inset-x-0 z-40 bg-white rounded-b-3xl shadow-2xl shadow-black/30 px-4 pt-3 pb-4 space-y-3 slide-down-in">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-ink-strong">Layers & Filters</span>
+                    <span className="text-sm font-bold text-ink-strong">{t('Layers & Filters')}</span>
                     <button
                       onClick={() => setIsFilterMenuOpen(false)}
                       className="w-10 h-10 rounded-full bg-card text-ink flex items-center justify-center"
-                      title="Close"
+                      title={t('Close')}
                     >
                       <SlidersHorizontal className="w-4 h-4" />
                     </button>
@@ -580,7 +583,7 @@ export default function App() {
                     <div key={row.label} className="space-y-1.5">
                       <span className="text-[11px] font-bold text-muted flex items-center gap-1.5">
                         <span className={`w-1.5 h-1.5 rounded-full ${row.dot}`} />
-                        {row.label}
+                        {t(row.label)}
                       </span>
                       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
                         {row.options.map(([value, text]) => (
@@ -593,7 +596,7 @@ export default function App() {
                                 : 'bg-card border-line text-muted hover:text-ink-strong font-medium'
                             }`}
                           >
-                            {text}
+                            {t(text)}
                           </button>
                         ))}
                       </div>
@@ -611,7 +614,7 @@ export default function App() {
                         }}
                         className="text-[11px] text-ink hover:underline font-semibold"
                       >
-                        Reset all filters
+                        {t('Reset all filters')}
                       </button>
                     </div>
                   )}
@@ -627,7 +630,7 @@ export default function App() {
                 setSelectedPlace(null);
                 setSelectedOpportunity(null);
               }}
-              onBookmark={(title) => showToast(`Saved "${title}" to your Dublin collection.`)}
+              onBookmark={(title) => showToast(t('Saved "{title}" to your collection.', { title }))}
               onAction={(msg) => showToast(msg)}
             />
 
@@ -667,7 +670,7 @@ export default function App() {
               blockedPeople={blockedPeople}
               onUpdateVisibility={(level: VisibilityLevel) => {
                 saveProfile({ visibility: level });
-                showToast(`Visibility set to ${level}`);
+                showToast(t('Visibility set to {level}', { level: t(({ exact: 'Point', zone: 'Zone', district: 'District', invisible: 'Invisible' } as const)[level]).toLowerCase() }));
               }}
               onOpenOnboardingEdit={() => setIsOnboardingModalOpen(true)}
               onOpenAura={() => setIsAuraOpen(true)}
@@ -675,7 +678,7 @@ export default function App() {
                 if (!userProfile.mood) return;
                 const base = Math.max(Date.now(), userProfile.mood.expiresAt);
                 saveProfile({ mood: { ...userProfile.mood, expiresAt: base + 60 * 60 * 1000 } });
-                showToast('Mood extended by 1 hour');
+                showToast(t('Mood extended by 1 hour'));
               }}
               onChangeMood={() => setIsStatusMoodOpen(true)}
               onShowPlace={(place) => {
@@ -711,7 +714,7 @@ export default function App() {
               className="flex flex-col items-center justify-center transition-colors group"
             >
               <Compass className={`w-5 h-5 ${activeTab === 'map' ? 'text-ink' : 'text-subtle group-hover:text-muted'}`} />
-              <span className={`text-[11px] mt-1 ${activeTab === 'map' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>Map</span>
+              <span className={`text-[11px] mt-1 ${activeTab === 'map' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>{t('Map')}</span>
             </button>
 
             {/* TAB 2: OPPORTUNITIES */}
@@ -723,13 +726,13 @@ export default function App() {
                 <Briefcase className={`w-5 h-5 ${activeTab === 'opportunities' ? 'text-opp-strong' : 'text-subtle group-hover:text-muted'}`} />
                 <span className="absolute -top-1 -right-2.5 w-2 h-2 rounded-full bg-opp" />
               </span>
-              <span className={`text-[11px] mt-1 ${activeTab === 'opportunities' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>Opportunities</span>
+              <span className={`text-[11px] mt-1 ${activeTab === 'opportunities' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>{t('Opportunities')}</span>
             </button>
 
             {/* TAB 3: PLUS ACTION BUTTON (+) */}
             <button
               onClick={() => setIsPlusActionOpen(true)}
-              aria-label="Add or Broadcast"
+              aria-label={t('Add or Broadcast')}
               className="flex flex-col items-center justify-center group relative -top-1"
             >
               <div className="w-12 h-12 rounded-full bg-people hover:bg-people-hover flex items-center justify-center text-white shadow-lg shadow-people/40 group-hover:scale-110 active:scale-95 transition-all">
@@ -748,7 +751,7 @@ export default function App() {
                   <span className="absolute -top-1 -right-2.5 w-2 h-2 rounded-full bg-people animate-ping" />
                 )}
               </span>
-              <span className={`text-[11px] mt-1 ${activeTab === 'chat' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>Signals</span>
+              <span className={`text-[11px] mt-1 ${activeTab === 'chat' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>{t('Signals')}</span>
             </button>
 
             {/* TAB 5: PROFILE */}
@@ -757,7 +760,7 @@ export default function App() {
               className="flex flex-col items-center justify-center transition-colors group"
             >
               <UserRound className={`w-5 h-5 ${activeTab === 'profile' ? 'text-ink' : 'text-subtle group-hover:text-muted'}`} />
-              <span className={`text-[11px] mt-1 ${activeTab === 'profile' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>Profile</span>
+              <span className={`text-[11px] mt-1 ${activeTab === 'profile' ? 'text-ink-strong font-bold' : 'text-subtle font-semibold group-hover:text-muted'}`}>{t('Profile')}</span>
             </button>
           </nav>
 
@@ -791,7 +794,7 @@ export default function App() {
             onClose={() => setIsStatusMoodOpen(false)}
             onUpdateStatusMood={(status, mood) => {
               saveProfile({ status, mood });
-              showToast('Updated your Dublin presence status.');
+              showToast(t('Updated your presence status.'));
             }}
           />
 
@@ -827,7 +830,7 @@ export default function App() {
             onClose={() => setIsAddOpportunityOpen(false)}
             onAddOpportunity={handleAddOpportunity}
             userName={userProfile.name}
-            userDistrict={`${userProfile.district}, Dublin`}
+            userDistrict={`${userProfile.district}`}
           />
         </div>
     </div>

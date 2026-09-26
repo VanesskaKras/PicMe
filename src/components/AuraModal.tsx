@@ -11,6 +11,7 @@ import {
   HeartHandshake
 } from 'lucide-react';
 import { AuraLog, UserProfile } from '../types';
+import { useI18n } from '../i18n';
 
 interface AuraModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export const AuraModal: React.FC<AuraModalProps> = ({
   currentUser,
   auraLogs,
 }) => {
+  const { t } = useI18n();
   if (!isOpen) return null;
 
   const isModeratorTier = currentUser.auraScore >= 850;
@@ -49,7 +51,7 @@ export const AuraModal: React.FC<AuraModalProps> = ({
                     {currentUser.auraScore}
                   </span>
                   <span className="text-[9px] uppercase tracking-wider text-muted font-semibold">
-                    Aura
+                    {t('Aura')}
                   </span>
                 </div>
               </div>
@@ -57,20 +59,20 @@ export const AuraModal: React.FC<AuraModalProps> = ({
 
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-ink-strong tracking-tight">Urban Contribution Aura</h2>
+                <h2 className="text-lg font-bold text-ink-strong tracking-tight">{t('Urban Contribution Aura')}</h2>
                 {isModeratorTier ? (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success-soft text-success border border-success/40 flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3 text-success" />
-                    City Moderator
+                    {t('City Moderator')}
                   </span>
                 ) : (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-success-soft text-success border border-success/40">
-                    Active Citizen
+                    {t('Active Citizen')}
                   </span>
                 )}
               </div>
               <p className="text-xs text-muted mt-0.5">
-                Objective system counter of reliable actions. Zero vanity likes.
+                {t('Objective system counter of reliable actions. Zero vanity likes.')}
               </p>
             </div>
           </div>
@@ -80,15 +82,15 @@ export const AuraModal: React.FC<AuraModalProps> = ({
             <div className="flex items-center gap-2">
               <Radio className="w-4 h-4 text-people-strong" />
               <div>
-                <span className="text-xs font-semibold text-ink-strong block">Daily Free Signals</span>
-                <span className="text-[10px] text-subtle">Anti-spam intent throttle</span>
+                <span className="text-xs font-semibold text-ink-strong block">{t('Daily Free Signals')}</span>
+                <span className="text-[10px] text-subtle">{t('Anti-spam intent throttle')}</span>
               </div>
             </div>
             <div className="text-right">
               <span className="text-sm font-mono font-bold text-success">
                 {currentUser.dailySignalsLimit - currentUser.dailySignalsUsed} / {currentUser.dailySignalsLimit}
               </span>
-              <span className="text-[10px] text-subtle block">pings left today</span>
+              <span className="text-[10px] text-subtle block">{t('pings left today')}</span>
             </div>
           </div>
         </div>
@@ -99,11 +101,10 @@ export const AuraModal: React.FC<AuraModalProps> = ({
           <div className="p-4 rounded-2xl bg-card border border-line space-y-2 text-xs">
             <div className="flex items-center gap-2 text-success font-semibold">
               <HeartHandshake className="w-4 h-4 text-success shrink-0" />
-              <span>How Aura Governs Dublin Interaction</span>
+              <span>{t('How Aura Governs Interaction')}</span>
             </div>
             <p className="text-muted leading-relaxed text-[11px]">
-              No human can manually downvote you. Aura changes purely through observable actions:
-              keeping promises, verifying places, and responding promptly instead of silently disappearing.
+              {t('No human can manually downvote you. Aura changes purely through observable actions: keeping promises, verifying places, and responding promptly instead of silently disappearing.')}
             </p>
           </div>
 
@@ -113,24 +114,24 @@ export const AuraModal: React.FC<AuraModalProps> = ({
             <div className="p-3.5 rounded-2xl bg-success-soft border border-success/30 space-y-2">
               <span className="text-success font-bold flex items-center gap-1.5 text-xs">
                 <TrendingUp className="w-4 h-4" />
-                What Adds to Aura (+)
+                {t('What Adds to Aura (+)')}
               </span>
               <ul className="space-y-1.5 text-[11px] text-muted">
                 <li className="flex items-start gap-1.5">
                   <CheckCircle className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
-                  <span><strong>+35</strong> Adding/verifying local places</span>
+                  <span><strong>+35</strong> {t('Adding/verifying local places')}</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <CheckCircle className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
-                  <span><strong>+20</strong> Replying in reasonable time window</span>
+                  <span><strong>+20</strong> {t('Replying in reasonable time window')}</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <CheckCircle className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
-                  <span><strong>+5</strong> Polite decline ("Not right now")</span>
+                  <span><strong>+5</strong> {t('Polite decline ("Not right now")')}</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <CheckCircle className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
-                  <span><strong>+50</strong> Sourcing housing or job opportunity</span>
+                  <span><strong>+50</strong> {t('Sourcing housing or job opportunity')}</span>
                 </li>
               </ul>
             </div>
@@ -139,23 +140,23 @@ export const AuraModal: React.FC<AuraModalProps> = ({
             <div className="p-3.5 rounded-2xl bg-danger-soft border border-danger/30 space-y-2">
               <span className="text-danger font-bold flex items-center gap-1.5 text-xs">
                 <TrendingDown className="w-4 h-4" />
-                What Subtracts (-)
+                {t('What Subtracts (-)')}
               </span>
               <ul className="space-y-1.5 text-[11px] text-muted">
                 <li className="flex items-start gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5 text-danger shrink-0 mt-0.5" />
-                  <span><strong>-40</strong> Silent ghosting after read receipt</span>
+                  <span><strong>-40</strong> {t('Silent ghosting after read receipt')}</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5 text-danger shrink-0 mt-0.5" />
-                  <span><strong>-50</strong> RSVPing to group event & no-show</span>
+                  <span><strong>-50</strong> {t('RSVPing to group event & no-show')}</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5 text-danger shrink-0 mt-0.5" />
-                  <span><strong>-60</strong> Spamming unsolicited signals</span>
+                  <span><strong>-60</strong> {t('Spamming unsolicited signals')}</span>
                 </li>
                 <li className="text-[10px] text-muted pt-1 border-t border-danger/20">
-                  <em>Declining politely is never punished! Only silent disappearance after reading.</em>
+                  <em>{t('Declining politely is never punished! Only silent disappearance after reading.')}</em>
                 </li>
               </ul>
             </div>
@@ -166,7 +167,7 @@ export const AuraModal: React.FC<AuraModalProps> = ({
             <div className="flex items-center justify-between text-xs">
               <span className="font-semibold text-ink-strong flex items-center gap-1.5">
                 <Award className="w-4 h-4 text-success" />
-                Path to Dublin Map Moderator (850 Aura)
+                {t('Path to Map Moderator (850 Aura)')}
               </span>
               <span className="font-mono text-success">{currentUser.auraScore} / 850</span>
             </div>
@@ -177,14 +178,14 @@ export const AuraModal: React.FC<AuraModalProps> = ({
               />
             </div>
             <p className="text-[10px] text-subtle">
-              At 850 Aura, you unlock the ability to approve community places, curate housing listings, and moderate neighborhood boards.
+              {t('At 850 Aura, you unlock the ability to approve community places, curate housing listings, and moderate neighborhood boards.')}
             </p>
           </div>
 
           {/* Recent Action Activity Log */}
           <div>
             <span className="text-[11px] font-semibold text-muted uppercase tracking-wider block mb-2">
-              Recent Aura Logs
+              {t('Recent Aura Logs')}
             </span>
             <div className="space-y-1.5">
               {auraLogs.map((log) => (
@@ -193,8 +194,8 @@ export const AuraModal: React.FC<AuraModalProps> = ({
                   className="p-2.5 rounded-xl bg-card/80 border border-line flex items-center justify-between text-xs"
                 >
                   <div className="flex-1 pr-2">
-                    <span className="text-ink-strong block text-xs">{log.action}</span>
-                    <span className="text-[10px] text-subtle">{log.timestamp}</span>
+                    <span className="text-ink-strong block text-xs">{t(log.action)}</span>
+                    <span className="text-[10px] text-subtle">{t(log.timestamp)}</span>
                   </div>
                   <span
                     className={`font-mono font-bold text-xs ${
@@ -215,7 +216,7 @@ export const AuraModal: React.FC<AuraModalProps> = ({
             onClick={onClose}
             className="px-5 py-2 rounded-xl bg-line hover:bg-line text-ink-strong text-xs font-semibold"
           >
-            Close
+            {t('Close')}
           </button>
         </div>
       </div>

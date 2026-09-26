@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
+  Globe,
   Layers,
   LogOut,
   MapPin,
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react';
 import { UserProfile, VisibilityLevel, DublinPlace, DublinOpportunity } from '../types';
 import { GraphicIcon } from './GraphicIcon';
+import { useI18n, LANGUAGES, TFunction } from '../i18n';
 
 export interface BlockedPerson {
   id: string;
@@ -82,13 +84,17 @@ const VISIBILITY_OPTIONS: { level: VisibilityLevel; label: string }[] = [
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function formatTimeLeft(ms: number): string {
-  if (ms <= 0) return 'expired';
+function formatDuration(ms: number, t: TFunction): string {
   const mins = Math.ceil(ms / 60000);
-  if (mins < 60) return `${mins} min left`;
+  if (mins < 60) return t('{n} min', { n: mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} h ${mins % 60 ? `${mins % 60} min ` : ''}left`;
-  return `${Math.ceil(ms / DAY_MS)} d left`;
+  if (hours < 24) return mins % 60 ? t('{h} h {m} min', { h: hours, m: mins % 60 }) : t('{h} h', { h: hours });
+  return t('{n} d', { n: Math.ceil(ms / DAY_MS) });
+}
+
+function formatTimeLeft(ms: number, t: TFunction): string {
+  if (ms <= 0) return t('expired');
+  return t('{time} left', { time: formatDuration(ms, t) });
 }
 
 // Filled = active right now, outlined = permanent / background
@@ -137,6 +143,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [settings, setSettings] = useState<ProfileSettings>(loadProfileSettings);
   const [now, setNow] = useState(Date.now());
+  const { lang, setLang, t } = useI18n();
 
   // Keep mood / fade timers fresh
   useEffect(() => {
@@ -165,7 +172,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     }
   };
 
-  const visibilityLabel = VISIBILITY_OPTIONS.find((o) => o.level === user.visibility)?.label ?? 'Zone';
+  const visibilityLabel = t(VISIBILITY_OPTIONS.find((o) => o.level === user.visibility)?.label ?? 'Zone');
   const signalsLeft = user.dailySignalsLimit - user.dailySignalsUsed;
   const moodMsLeft = user.mood ? user.mood.expiresAt - now : 0;
   const moodActive = !!user.mood && moodMsLeft > 0;
@@ -182,9 +189,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const presenceCount = myAnnouncements.length + myEvents.length + myPlaces.length;
 
   const distanceLine: Record<VisibilityLevel, string> = {
-    exact: `≈ 120 m away · exact spot`,
-    zone: `Within a 500 m zone in ${user.district}`,
-    district: `Somewhere in ${user.district}`,
+    exact: t('≈ 120 m away · exact spot'),
+    zone: t('Within a 500 m zone in {district}', { district: user.district }),
+    district: t('Somewhere in {district}', { district: user.district }),
     invisible: '',
   };
 
@@ -195,17 +202,17 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         <button
           onClick={() => setView('profile')}
           className="w-9 h-9 rounded-full bg-card flex items-center justify-center text-ink-strong"
-          aria-label="Back to profile"
+          aria-label={t('Back to profile')}
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <h3 className="text-base font-bold text-ink-strong">Settings</h3>
+        <h3 className="text-base font-bold text-ink-strong">{t('Settings')}</h3>
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5">
         {/* Account */}
         <section>
-          <SectionTitle>Account</SectionTitle>
+          <SectionTitle>{t('Account')}</SectionTitle>
           <div className="rounded-3xl bg-card border border-line divide-y divide-line">
             <div className="px-4 py-3 flex items-center gap-3">
               <User className="w-4 h-4 text-muted" />
@@ -216,15 +223,33 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </div>
             <button onClick={onOpenOnboardingEdit} className="w-full px-4 py-3 flex items-center gap-3 text-left">
               <Pencil className="w-4 h-4 text-muted" />
-              <span className="flex-1 text-sm text-ink-strong">Edit profile & tags</span>
+              <span className="flex-1 text-sm text-ink-strong">{t('Edit profile & tags')}</span>
               <ChevronRight className="w-4 h-4 text-muted" />
             </button>
           </div>
         </section>
 
+        {/* Language */}
+        <section>
+          <SectionTitle>{t('Language')}</SectionTitle>
+          <div className="grid grid-cols-2 p-1 rounded-full bg-card border border-line">
+            {LANGUAGES.map((l) => (
+              <button
+                key={l.code}
+                onClick={() => setLang(l.code)}
+                aria-pressed={lang === l.code}
+                className={`${btnBase} py-2 flex items-center justify-center gap-1.5 ${lang === l.code ? 'bg-ink text-white' : 'text-muted hover:text-ink-strong'}`}
+              >
+                <Globe className="w-3.5 h-3.5" />
+                {l.label}
+              </button>
+            ))}
+          </div>
+        </section>
+
         {/* Notifications */}
         <section>
-          <SectionTitle>Notifications</SectionTitle>
+          <SectionTitle>{t('Notifications')}</SectionTitle>
           <div className="rounded-3xl bg-card border border-line divide-y divide-line">
             {([
               ['signals', 'New signals & replies'],
@@ -233,9 +258,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             ] as const).map(([key, label]) => (
               <div key={key} className="px-4 py-3 flex items-center gap-3">
                 <Bell className="w-4 h-4 text-muted" />
-                <span className="flex-1 text-sm text-ink-strong">{label}</span>
+                <span className="flex-1 text-sm text-ink-strong">{t(label)}</span>
                 <Toggle
-                  label={label}
+                  label={t(label)}
                   checked={settings.notifications[key]}
                   onChange={(v) => updateSettings({ ...settings, notifications: { ...settings.notifications, [key]: v } })}
                 />
@@ -246,7 +271,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
         {/* Default map layers */}
         <section>
-          <SectionTitle>Default map layers</SectionTitle>
+          <SectionTitle>{t('Default map layers')}</SectionTitle>
           <div className="rounded-3xl bg-card border border-line divide-y divide-line">
             {([
               ['people', 'People', 'bg-people'],
@@ -256,26 +281,26 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               <div key={key} className="px-4 py-3 flex items-center gap-3">
                 <Layers className="w-4 h-4 text-muted" />
                 <span className={`w-2 h-2 rounded-full ${dot}`} />
-                <span className="flex-1 text-sm text-ink-strong">{label}</span>
+                <span className="flex-1 text-sm text-ink-strong">{t(label)}</span>
                 <Toggle
-                  label={label}
+                  label={t(label)}
                   checked={settings.defaultLayers[key]}
                   onChange={(v) => updateSettings({ ...settings, defaultLayers: { ...settings.defaultLayers, [key]: v } })}
                 />
               </div>
             ))}
           </div>
-          <p className="text-[11px] text-muted mt-1.5 px-1">Applied the next time you open the map.</p>
+          <p className="text-[11px] text-muted mt-1.5 px-1">{t('Applied the next time you open the map.')}</p>
         </section>
 
         {/* Blocked people */}
         <section>
-          <SectionTitle>Blocked people</SectionTitle>
+          <SectionTitle>{t('Blocked people')}</SectionTitle>
           <div className="rounded-3xl bg-card border border-line divide-y divide-line">
             {blockedPeople.length === 0 ? (
               <div className="px-4 py-4 flex items-center gap-3 text-sm text-muted">
                 <UserX className="w-4 h-4" />
-                Nobody blocked
+                {t('Nobody blocked')}
               </div>
             ) : (
               blockedPeople.map((p) => (
@@ -283,7 +308,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <img src={p.avatar} alt={p.name} className="w-8 h-8 rounded-full object-cover" />
                   <span className="flex-1 text-sm text-ink-strong truncate">{p.name}</span>
                   <button onClick={() => onUnblock(p.id)} className={`${btnBase} px-3 py-1.5 bg-ink text-white`}>
-                    Unblock
+                    {t('Unblock')}
                   </button>
                 </div>
               ))
@@ -295,7 +320,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         <section className="pt-2 pb-4 flex flex-col items-start gap-3 px-1">
           <button onClick={() => setDialog('logout')} className="text-sm font-semibold text-danger flex items-center gap-2">
             <LogOut className="w-4 h-4" />
-            Log out
+            {t('Log out')}
           </button>
           <button
             onClick={() => {
@@ -305,7 +330,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             className="text-sm font-semibold text-danger flex items-center gap-2"
           >
             <Trash2 className="w-4 h-4" />
-            Delete account
+            {t('Delete account')}
           </button>
         </section>
       </div>
@@ -326,20 +351,20 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             <span className="text-xs text-muted">{user.handle}</span>
           </div>
           <p className="text-xs text-muted mt-0.5">
-            {user.identity} · {user.activity}
+            {t(user.identity)} · {t(user.activity)}
           </p>
           <div className="flex items-center gap-1.5 mt-2 flex-wrap">
             <button onClick={onOpenAura} className={`${btnBase} px-2.5 py-1 bg-people hover:bg-people-hover text-ink-strong flex items-center gap-1`}>
               <Award className="w-3.5 h-3.5" />
-              {user.auraScore} Aura
+              {user.auraScore} {t('Aura')}
             </button>
             <span className={`${chipOutline} !px-2.5 !py-0.5 border-people text-ink-strong flex items-center gap-1 text-[11px]`}>
               <Radio className="w-3 h-3" />
-              {signalsLeft} signals left
+              {t('{n} signals left', { n: signalsLeft })}
             </span>
             <span className="text-[11px] text-muted flex items-center gap-1">
               {user.visibility === 'invisible' ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-              Visible: {visibilityLabel.toLowerCase()}
+              {t('Visible: {level}', { level: visibilityLabel.toLowerCase() })}
             </span>
           </div>
         </div>
@@ -348,11 +373,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       <div className="px-4 pb-6 space-y-5">
         {/* Right now */}
         <section>
-          <SectionTitle>Right now</SectionTitle>
+          <SectionTitle>{t('Right now')}</SectionTitle>
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted w-16 shrink-0">Character</span>
-              <span className={`${chipOutline} border-people text-ink-strong`}>{user.status}</span>
+              <span className="text-[11px] text-muted w-16 shrink-0">{t('Character')}</span>
+              <span className={`${chipOutline} border-people text-ink-strong`}>{t(user.status)}</span>
             </div>
 
             {moodActive && user.mood ? (
@@ -362,27 +387,27 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     <GraphicIcon nameOrEmoji={user.mood.emoji} size={18} className="text-ink-strong" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-ink-strong/70">Mood</div>
-                    <div className="text-sm font-semibold text-ink-strong truncate">{user.mood.text}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-ink-strong/70">{t('Mood')}</div>
+                    <div className="text-sm font-semibold text-ink-strong truncate">{t(user.mood.text)}</div>
                   </div>
                   <span className="px-2.5 py-1 rounded-full bg-white text-[11px] font-semibold text-ink-strong shrink-0">
-                    {formatTimeLeft(moodMsLeft)}
+                    {formatTimeLeft(moodMsLeft, t)}
                   </span>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={onExtendMood} className={`${btnBase} flex-1 py-2 bg-ink text-white`}>
-                    Extend 1 h
+                    {t('Extend 1 h')}
                   </button>
                   <button onClick={onChangeMood} className={`${btnBase} flex-1 py-2 bg-white text-ink-strong`}>
-                    Change
+                    {t('Change')}
                   </button>
                 </div>
               </div>
             ) : (
               <div className="rounded-3xl border border-line bg-card p-3.5 flex items-center justify-between gap-3">
-                <span className="text-xs text-muted">No active mood</span>
+                <span className="text-xs text-muted">{t('No active mood')}</span>
                 <button onClick={onChangeMood} className={`${btnBase} px-4 py-2 bg-people text-ink-strong`}>
-                  Set mood
+                  {t('Set mood')}
                 </button>
               </div>
             )}
@@ -391,7 +416,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
         {/* Visibility */}
         <section>
-          <SectionTitle>Visibility</SectionTitle>
+          <SectionTitle>{t('Visibility')}</SectionTitle>
           <div className="grid grid-cols-4 p-1 rounded-full bg-card border border-line">
             {VISIBILITY_OPTIONS.map((o) => {
               const active = user.visibility === o.level;
@@ -401,7 +426,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   onClick={() => onUpdateVisibility(o.level)}
                   className={`${btnBase} py-2 ${active ? 'bg-ink text-white' : 'text-muted hover:text-ink-strong'}`}
                 >
-                  {o.label}
+                  {t(o.label)}
                 </button>
               );
             })}
@@ -413,29 +438,29 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           <SectionTitle
             action={
               <button onClick={onOpenOnboardingEdit} className="text-[11px] font-semibold text-ink flex items-center gap-1">
-                <Pencil className="w-3 h-3" /> Edit
+                <Pencil className="w-3 h-3" /> {t('Edit')}
               </button>
             }
           >
-            About me
+            {t('About me')}
           </SectionTitle>
           <div className="rounded-3xl bg-card border border-line p-3.5 space-y-3">
             <div>
-              <span className="text-[11px] text-muted block mb-1.5">Activity</span>
+              <span className="text-[11px] text-muted block mb-1.5">{t('Activity')}</span>
               <div className="flex flex-wrap gap-1.5">
-                {[user.identity, user.activity].map((t) => (
-                  <span key={t} className={`${chipOutline} border-line text-ink-strong`}>
-                    {t}
+                {[user.identity, user.activity].map((tag) => (
+                  <span key={tag} className={`${chipOutline} border-line text-ink-strong`}>
+                    {t(tag)}
                   </span>
                 ))}
               </div>
             </div>
             <div>
-              <span className="text-[11px] text-muted block mb-1.5">Interests</span>
+              <span className="text-[11px] text-muted block mb-1.5">{t('Interests')}</span>
               <div className="flex flex-wrap gap-1.5">
-                {user.interests.map((t) => (
-                  <span key={t} className={`${chipOutline} border-people text-ink-strong`}>
-                    {t}
+                {user.interests.map((tag) => (
+                  <span key={tag} className={`${chipOutline} border-people text-ink-strong`}>
+                    {t(tag)}
                   </span>
                 ))}
               </div>
@@ -445,24 +470,24 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
         {/* Looking for / Can offer */}
         <section>
-          <SectionTitle>Looking for / Can offer</SectionTitle>
+          <SectionTitle>{t('Looking for / Can offer')}</SectionTitle>
           <div className="rounded-3xl bg-card border border-line p-3.5 space-y-3">
             <div>
-              <span className="text-[11px] text-muted block mb-1.5">Looking for</span>
+              <span className="text-[11px] text-muted block mb-1.5">{t('Looking for')}</span>
               <div className="flex flex-wrap gap-1.5">
-                {user.lookingFor.map((t) => (
-                  <span key={t} className={`${chipOutline} border-opp text-ink-strong`}>
-                    {t}
+                {user.lookingFor.map((tag) => (
+                  <span key={tag} className={`${chipOutline} border-opp text-ink-strong`}>
+                    {t(tag)}
                   </span>
                 ))}
               </div>
             </div>
             <div>
-              <span className="text-[11px] text-muted block mb-1.5">Can offer</span>
+              <span className="text-[11px] text-muted block mb-1.5">{t('Can offer')}</span>
               <div className="flex flex-wrap gap-1.5">
-                {user.offering.map((t) => (
-                  <span key={t} className={`${chipFilled} bg-opp text-ink-strong`}>
-                    {t}
+                {user.offering.map((tag) => (
+                  <span key={tag} className={`${chipFilled} bg-opp text-ink-strong`}>
+                    {t(tag)}
                   </span>
                 ))}
               </div>
@@ -472,10 +497,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
         {/* My presence on the map */}
         <section>
-          <SectionTitle>My presence on the map</SectionTitle>
+          <SectionTitle>{t('My presence on the map')}</SectionTitle>
           {presenceCount === 0 ? (
             <div className="rounded-3xl bg-card border border-line p-4 text-xs text-muted">
-              Nothing live yet. Anything you post with the + button shows up here while it's on the map.
+              {t("Nothing live yet. Anything you post with the + button shows up here while it's on the map.")}
             </div>
           ) : (
             <div className="rounded-3xl bg-card border border-line divide-y divide-line">
@@ -486,7 +511,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold text-ink-strong truncate">{opp.title}</div>
-                    <div className="text-[11px] text-muted">Announcement · fades in {formatTimeLeft(msLeft).replace(' left', '')}</div>
+                    <div className="text-[11px] text-muted">{t('Announcement · fades in {time}', { time: formatDuration(msLeft, t) })}</div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted shrink-0" />
                 </button>
@@ -498,7 +523,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold text-ink-strong truncate">{opp.title}</div>
-                    <div className="text-[11px] text-muted">Event · fades in {formatTimeLeft(msLeft).replace(' left', '')}</div>
+                    <div className="text-[11px] text-muted">{t('Event · fades in {time}', { time: formatDuration(msLeft, t) })}</div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted shrink-0" />
                 </button>
@@ -511,7 +536,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold text-ink-strong truncate">{place.name}</div>
                     <div className="text-[11px] text-muted truncate">
-                      {myPlaceEvents.includes(place) ? `Place · event ${place.eventTime ?? 'today'}` : `Place · ${place.district}`}
+                      {myPlaceEvents.includes(place) ? t('Place · event {time}', { time: place.eventTime ?? t('today') }) : t('Place · {district}', { district: place.district })}
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted shrink-0" />
@@ -524,7 +549,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         {/* How others see me */}
         <button onClick={() => setDialog('preview')} className={`${btnBase} w-full py-3 bg-ink text-white text-sm flex items-center justify-center gap-2`}>
           <Eye className="w-4 h-4" />
-          How others see me
+          {t('How others see me')}
         </button>
 
         {/* Settings */}
@@ -533,7 +558,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           className="w-full rounded-3xl bg-card border border-line px-4 py-3.5 flex items-center gap-3 text-left"
         >
           <Settings className="w-4 h-4 text-muted" />
-          <span className="flex-1 text-sm font-semibold text-ink-strong">Settings</span>
+          <span className="flex-1 text-sm font-semibold text-ink-strong">{t('Settings')}</span>
           <ChevronRight className="w-4 h-4 text-muted" />
         </button>
       </div>
@@ -550,8 +575,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       body = (
         <>
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-bold text-ink-strong">How people nearby see you</h4>
-            <button onClick={() => setDialog(null)} className="w-8 h-8 rounded-full bg-card flex items-center justify-center text-muted" aria-label="Close">
+            <h4 className="text-sm font-bold text-ink-strong">{t('How people nearby see you')}</h4>
+            <button onClick={() => setDialog(null)} className="w-8 h-8 rounded-full bg-card flex items-center justify-center text-muted" aria-label={t('Close')}>
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -559,8 +584,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           {user.visibility === 'invisible' ? (
             <div className="rounded-3xl bg-card border border-line p-5 text-center space-y-2">
               <EyeOff className="w-6 h-6 text-muted mx-auto" />
-              <p className="text-sm font-semibold text-ink-strong">You're invisible</p>
-              <p className="text-xs text-muted">Nobody nearby sees your card or your spot on the map.</p>
+              <p className="text-sm font-semibold text-ink-strong">{t("You're invisible")}</p>
+              <p className="text-xs text-muted">{t('Nobody nearby sees your card or your spot on the map.')}</p>
             </div>
           ) : (
             <div className="rounded-3xl border border-line bg-white p-4 space-y-3">
@@ -571,7 +596,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     {user.name} <span className="font-normal text-muted text-xs">{user.handle}</span>
                   </div>
                   <div className="text-[11px] text-muted">
-                    {user.identity} · {user.activity}
+                    {t(user.identity)} · {t(user.activity)}
                   </div>
                   <div className="text-[11px] text-muted flex items-center gap-1 mt-0.5">
                     <MapPin className="w-3 h-3" />
@@ -580,25 +605,25 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 </div>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                <span className={`${chipOutline} border-people text-ink-strong`}>{user.status}</span>
+                <span className={`${chipOutline} border-people text-ink-strong`}>{t(user.status)}</span>
                 {moodActive && user.mood && (
                   <span className={`${chipFilled} bg-people text-ink-strong flex items-center gap-1`}>
                     <GraphicIcon nameOrEmoji={user.mood.emoji} size={12} className="text-ink-strong" />
-                    {user.mood.text}
+                    {t(user.mood.text)}
                   </span>
                 )}
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {user.interests.map((t) => (
-                  <span key={t} className={`${chipOutline} border-people text-ink-strong`}>
-                    {t}
+                {user.interests.map((tag) => (
+                  <span key={tag} className={`${chipOutline} border-people text-ink-strong`}>
+                    {t(tag)}
                   </span>
                 ))}
               </div>
-              <div className={`${btnBase} w-full py-2.5 bg-people text-ink-strong text-center`}>Send signal</div>
+              <div className={`${btnBase} w-full py-2.5 bg-people text-ink-strong text-center`}>{t('Send signal')}</div>
             </div>
           )}
-          <p className="text-[11px] text-muted mt-3 text-center">Preview only — based on your current visibility ({visibilityLabel.toLowerCase()}).</p>
+          <p className="text-[11px] text-muted mt-3 text-center">{t('Preview only — based on your current visibility ({level}).', { level: visibilityLabel.toLowerCase() })}</p>
         </>
       );
     }
@@ -606,17 +631,17 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     if (dialog === 'logout') {
       body = (
         <div className="space-y-4">
-          <h4 className="text-base font-bold text-ink-strong">Log out of your account?</h4>
+          <h4 className="text-base font-bold text-ink-strong">{t('Log out of your account?')}</h4>
           <div className="flex gap-2">
             <button onClick={onLogout} className={`${btnBase} flex-1 py-2.5 bg-danger text-white text-sm`}>
-              Log out
+              {t('Log out')}
             </button>
             <button onClick={() => setDialog(null)} className={`${btnBase} flex-1 py-2.5 bg-card border border-line text-ink-strong text-sm`}>
-              Cancel
+              {t('Cancel')}
             </button>
           </div>
           <div className="rounded-3xl bg-card border border-line p-3.5 space-y-2.5">
-            <p className="text-xs text-ink-strong">Just want to disappear from the map? Turn on invisible mode.</p>
+            <p className="text-xs text-ink-strong">{t('Just want to disappear from the map? Turn on invisible mode.')}</p>
             <button
               onClick={() => {
                 onUpdateVisibility('invisible');
@@ -625,7 +650,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               className={`${btnBase} px-4 py-2 bg-ink text-white flex items-center gap-1.5`}
             >
               <EyeOff className="w-3.5 h-3.5" />
-              Go invisible
+              {t('Go invisible')}
             </button>
           </div>
         </div>
@@ -633,20 +658,20 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     }
 
     if (dialog === 'delete') {
-      const canDelete = deleteConfirmText.trim().toUpperCase() === 'DELETE';
+      const canDelete = deleteConfirmText.trim().toUpperCase() === t('DELETE').toUpperCase();
       body = (
         <div className="space-y-3.5">
-          <h4 className="text-base font-bold text-danger">Delete your account for good?</h4>
+          <h4 className="text-base font-bold text-danger">{t('Delete your account for good?')}</h4>
           <p className="text-xs text-ink-strong">
-            Your profile, Aura, signals, and everything you've added to the map will be permanently removed. This can't be undone.
+            {t("Your profile, Aura, signals, and everything you've added to the map will be permanently removed. This can't be undone.")}
           </p>
           <label className="block">
-            <span className="text-[11px] text-muted">Type DELETE to confirm</span>
+            <span className="text-[11px] text-muted">{t('Type {word} to confirm', { word: t('DELETE') })}</span>
             <input
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               className="mt-1 w-full px-3.5 py-2.5 rounded-2xl bg-card border border-line text-sm text-ink-strong outline-none focus:border-danger"
-              placeholder="DELETE"
+              placeholder={t('DELETE')}
             />
           </label>
           <div className="flex gap-2">
@@ -655,10 +680,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               disabled={!canDelete}
               className={`${btnBase} flex-1 py-2.5 text-sm ${canDelete ? 'bg-danger text-white' : 'bg-line text-muted cursor-not-allowed'}`}
             >
-              Delete account
+              {t('Delete account')}
             </button>
             <button onClick={() => setDialog(null)} className={`${btnBase} flex-1 py-2.5 bg-card border border-line text-ink-strong text-sm`}>
-              Cancel
+              {t('Cancel')}
             </button>
           </div>
         </div>

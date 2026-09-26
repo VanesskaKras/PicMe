@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { ChatThreadItem, NearbyDublinUser, UserProfile } from '../types';
 import { GraphicIcon } from './GraphicIcon';
+import { useI18n, TFunction } from '../i18n';
 
 interface ChatDrawerProps {
   isOpen: boolean;
@@ -40,7 +41,8 @@ function getApproxDistance(
   lat1: number,
   lon1: number,
   lat2: number,
-  lon2: number
+  lon2: number,
+  t: TFunction
 ): string {
   const R = 6371e3; // Earth radius in meters
   const phi1 = (lat1 * Math.PI) / 180;
@@ -54,8 +56,8 @@ function getApproxDistance(
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const meters = Math.round(R * c);
 
-  if (meters < 1000) return `~${meters}m away`;
-  return `~${(meters / 1000).toFixed(1)}km away`;
+  if (meters < 1000) return t('~{n}m away', { n: meters });
+  return t('~{n}km away', { n: (meters / 1000).toFixed(1) });
 }
 
 export const ChatDrawer: React.FC<ChatDrawerProps> = ({
@@ -72,6 +74,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   onOpenStatusMood,
 }) => {
   // Main view tabs: ONLY 'resonance' and 'requests' (explicitly NO history tab)
+  const { t } = useI18n();
   const [activeMainTab, setActiveMainTab] = useState<'resonance' | 'requests'>('resonance');
 
   // Resonance sub-filters
@@ -87,10 +90,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
   // Context modal for sending a signal from Resonance tab
   const [signalingUser, setSignalingUser] = useState<NearbyDublinUser | null>(null);
-  const [presetNote, setPresetNote] = useState('Saw your vibe on Dublin map · Up to connect!');
+  const [presetNote, setPresetNote] = useState('Saw your vibe on the map · Up to connect!');
   const [signalSuccessMsg, setSignalSuccessMsg] = useState<string | null>(null);
 
-  // Dublin user coordinates for Portobello reference
+  // user coordinates for Portobello reference
   const userLat = 53.3330;
   const userLng = -6.2655;
 
@@ -152,8 +155,8 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
   const handleConfirmSignal = () => {
     if (!signalingUser) return;
-    onSendSignal(signalingUser, presetNote);
-    setSignalSuccessMsg(`Signal radiated to ${signalingUser.name}!`);
+    onSendSignal(signalingUser, t(presetNote));
+    setSignalSuccessMsg(t('Signal radiated to {name}!', { name: signalingUser.name }));
     setTimeout(() => {
       setSignalSuccessMsg(null);
       setSignalingUser(null);
@@ -173,10 +176,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               </div>
               <div>
                 <h3 className="text-base font-bold text-ink-strong tracking-tight flex items-center gap-2">
-                  Signals & Resonance
+                  {t('Signals & Resonance')}
                 </h3>
                 <p className="text-xs text-muted">
-                  Intentional Dublin connection radar · Zero ghosting protocol
+                  {t('Intentional connection radar · Zero ghosting protocol')}
                 </p>
               </div>
             </div>
@@ -185,7 +188,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               {/* Daily Signals Pill */}
               <div className="px-3 py-1.5 rounded-xl bg-card/90 border border-people/30 text-people-strong font-mono text-xs flex items-center gap-1.5 shadow-sm">
                 <Zap className="w-3.5 h-3.5 text-people-strong fill-people" />
-                <span>{dailySignalsRemaining} / 10 left</span>
+                <span>{t('{n} / 10 left', { n: dailySignalsRemaining })}</span>
               </div>
             </div>
           </div>
@@ -205,7 +208,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               }`}
             >
               <Zap className="w-4 h-4 text-current" />
-              <span>Resonance</span>
+              <span>{t('Resonance')}</span>
               <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-people-soft text-people-strong border border-people/30">
                 {nearbyUsers.length}
               </span>
@@ -221,7 +224,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               }`}
             >
               <Radio className="w-4 h-4 text-current" />
-              <span>Requests</span>
+              <span>{t('Requests')}</span>
               {receivedThreads.length > 0 && (
                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-people-soft text-people-strong border border-people/30 animate-pulse">
                   {receivedThreads.length}
@@ -240,7 +243,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
             <div className="space-y-4">
               {/* Sub-filter chips */}
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                <span className="text-[11px] font-bold text-muted shrink-0">Filter:</span>
+                <span className="text-[11px] font-bold text-muted shrink-0">{t('Filter:')}</span>
                 <button
                   onClick={() => setResonanceFilter('all')}
                   className={`px-3 py-1 rounded-xl text-[11px] font-medium transition-all shrink-0 ${
@@ -249,7 +252,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       : 'bg-card/80 text-muted hover:text-ink-strong border border-line'
                   }`}
                 >
-                  All Resonant ({nearbyUsers.length})
+                  {t('All Resonant ({n})', { n: nearbyUsers.length })}
                 </button>
                 <button
                   onClick={() => setResonanceFilter('mood')}
@@ -259,7 +262,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       : 'bg-card/80 text-muted hover:text-ink-strong border border-line'
                   }`}
                 >
-                  <span>Shared Mood</span>
+                  <span>{t('Shared Mood')}</span>
                   <Coffee className="w-3 h-3 text-current" />
                 </button>
                 <button
@@ -270,7 +273,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       : 'bg-card/80 text-muted hover:text-ink-strong border border-line'
                   }`}
                 >
-                  High Match (80%+)
+                  {t('High Match (80%+)')}
                 </button>
                 <button
                   onClick={() => setResonanceFilter('nearby')}
@@ -281,7 +284,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                   }`}
                 >
                   <MapPin className="w-3 h-3 text-current" />
-                  <span>Nearby (&lt;1.2km)</span>
+                  <span>{t('Nearby (<1.2km)')}</span>
                 </button>
               </div>
 
@@ -289,7 +292,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               <div className="grid grid-cols-1 gap-3.5">
                 {resonantUsers.map((user) => {
                   const isSignalSent = sentUserIds.has(user.id);
-                  const distanceStr = getApproxDistance(userLat, userLng, user.lat, user.lng);
+                  const distanceStr = getApproxDistance(userLat, userLng, user.lat, user.lng, t);
 
                   return (
                     <div
@@ -317,7 +320,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                               <span className="text-xs text-people-strong font-mono">{user.handle}</span>
                             </div>
                             <p className="text-xs text-muted">
-                              {user.identity} · {user.activity}
+                              {t(user.identity)} · {t(user.activity)}
                             </p>
                             <p className="text-[11px] text-subtle flex items-center gap-1 mt-0.5">
                               <MapPin className="w-3 h-3 text-muted" />
@@ -329,10 +332,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         {/* Scores */}
                         <div className="text-right shrink-0">
                           <div className="inline-block px-2.5 py-1 rounded-xl bg-people-soft border border-people/30 text-people-strong font-mono text-xs font-bold shadow-sm">
-                            {user.mutualScore}% Resonance
+                            {t('{n}% Resonance', { n: user.mutualScore })}
                           </div>
                           <div className="text-[10px] text-people-strong font-mono mt-1">
-                            {user.auraScore} Aura
+                            {user.auraScore} {t('Aura')}
                           </div>
                         </div>
                       </div>
@@ -345,7 +348,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                               <GraphicIcon nameOrEmoji={user.mood.emoji} size="sm" className="text-people-strong" />
                             </span>
                             <div className="min-w-0">
-                              <span className="font-semibold text-ink-strong">{user.mood.text}</span>
+                              <span className="font-semibold text-ink-strong">{t(user.mood.text)}</span>
                               {user.mood.note && (
                                 <p className="text-[11px] text-muted italic mt-0.5 truncate">
                                   "{user.mood.note}"
@@ -357,7 +360,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           <div className="flex items-center gap-1.5 text-muted">
                             <Sparkles className="w-3.5 h-3.5 text-people-strong shrink-0" />
                             <span>
-                              Status: <strong className="text-ink-strong">{user.status}</strong>
+                              {t('Status:')} <strong className="text-ink-strong">{t(user.status)}</strong>
                             </span>
                           </div>
                         )}
@@ -366,14 +369,14 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         {user.mutualTags.length > 0 && (
                           <div className="flex items-center gap-1.5 pt-1 flex-wrap">
                             <span className="text-[10px] text-subtle uppercase tracking-wider">
-                              Shared:
+                              {t('Shared:')}
                             </span>
                             {user.mutualTags.map((tag) => (
                               <span
                                 key={tag}
                                 className="px-2 py-0.5 rounded-md text-[10px] bg-people-soft text-people-strong border border-people/30"
                               >
-                                {tag}
+                                {t(tag)}
                               </span>
                             ))}
                           </div>
@@ -384,13 +387,13 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       <div className="flex items-center justify-between pt-1">
                         <span className="text-[11px] text-muted flex items-center gap-1">
                           <Compass className="w-3.5 h-3.5 text-people-strong" />
-                          <span>Status: <strong className="text-ink-strong">{user.status}</strong></span>
+                          <span>{t('Status:')} <strong className="text-ink-strong">{t(user.status)}</strong></span>
                         </span>
 
                         {isSignalSent ? (
                           <span className="px-3 py-1.5 rounded-xl bg-card border border-people/30 text-people-strong text-xs font-semibold flex items-center gap-1.5">
                             <CheckCircle className="w-3.5 h-3.5" />
-                            <span>Signal Radiated</span>
+                            <span>{t('Signal Radiated')}</span>
                           </span>
                         ) : (
                           <button
@@ -403,7 +406,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                             }`}
                           >
                             <Zap className="w-3.5 h-3.5 fill-current" />
-                            <span>Send Signal</span>
+                            <span>{t('Send Signal')}</span>
                           </button>
                         )}
                       </div>
@@ -414,15 +417,15 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                 {resonantUsers.length === 0 && (
                   <div className="p-8 text-center bg-card border border-line rounded-3xl space-y-3">
                     <Compass className="w-10 h-10 text-subtle mx-auto" />
-                    <h4 className="text-sm font-bold text-ink-strong">No Resonant Signals for this Filter</h4>
+                    <h4 className="text-sm font-bold text-ink-strong">{t('No Resonant Signals for this Filter')}</h4>
                     <p className="text-xs text-muted max-w-sm mx-auto">
-                      Try switching to "All Resonant" or update your mood to match more Dubliners nearby.
+                      {t('Try switching to "All Resonant" or update your mood to match more people nearby.')}
                     </p>
                     <button
                       onClick={() => setResonanceFilter('all')}
                       className="px-4 py-2 rounded-xl bg-card border border-line text-ink text-xs font-semibold hover:border-ink/40"
                     >
-                      Show All Resonant ({nearbyUsers.length})
+                      {t('Show All Resonant ({n})', { n: nearbyUsers.length })}
                     </button>
                   </div>
                 )}
@@ -433,7 +436,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                 <div className="flex items-center gap-2.5">
                   <Sparkles className="w-4 h-4 text-people-strong shrink-0" />
                   <p className="text-[11px] text-muted leading-tight">
-                    Want higher resonance? Update your active mood and status to broadcast what you’re currently up for.
+                    {t('Want higher resonance? Update your active mood and status to broadcast what you’re currently up for.')}
                   </p>
                 </div>
                 {onOpenStatusMood && (
@@ -441,7 +444,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                     onClick={onOpenStatusMood}
                     className="px-3 py-1.5 rounded-xl bg-ink text-white text-[11px] font-bold shrink-0 hover:bg-ink-strong"
                   >
-                    Edit Mood
+                    {t('Edit Mood')}
                   </button>
                 )}
               </div>
@@ -464,7 +467,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         className="p-1.5 rounded-xl bg-card border border-line text-muted hover:text-ink-strong flex items-center gap-1 text-xs"
                       >
                         <ArrowLeft className="w-4 h-4" />
-                        <span>Requests</span>
+                        <span>{t('Requests')}</span>
                       </button>
                       <img
                         src={currentDialogueThread.peerAvatar}
@@ -476,14 +479,14 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           {currentDialogueThread.peerName}
                         </h4>
                         <span className="text-[10px] text-muted font-mono">
-                          {currentDialogueThread.peerStatus}
+                          {t(currentDialogueThread.peerStatus)}
                         </span>
                       </div>
                     </div>
 
                     <div className="px-2.5 py-1 rounded-xl bg-warning-soft border border-warning/30 text-warning text-[10px] font-mono flex items-center gap-1">
                       <Clock className="w-3 h-3 text-warning" />
-                      <span>~{Math.round(currentDialogueThread.timerSecondsRemaining / 60)}m window</span>
+                      <span>{t('~{n}m window', { n: Math.round(currentDialogueThread.timerSecondsRemaining / 60) })}</span>
                     </div>
                   </div>
 
@@ -496,9 +499,9 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           <Lock className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="text-xs font-bold text-ink-strong">Protected Message Preview</h4>
+                          <h4 className="text-xs font-bold text-ink-strong">{t('Protected Message Preview')}</h4>
                           <p className="text-[11px] text-muted max-w-sm mx-auto mt-1">
-                            In PicMe, message preview is shielded on initial notification so nobody reads in secret.
+                            {t('In PicMe, message preview is shielded on initial notification so nobody reads in secret.')}
                           </p>
                         </div>
                         <button
@@ -506,7 +509,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           className="px-4 py-2 rounded-xl bg-ink hover:bg-ink-strong text-white font-bold text-xs shadow-md shadow-ink/20 inline-flex items-center gap-1.5"
                         >
                           <Eye className="w-3.5 h-3.5" />
-                          <span>Reveal Intent & Open Safe Dialogue</span>
+                          <span>{t('Reveal Intent & Open Safe Dialogue')}</span>
                         </button>
                       </div>
                     ) : (
@@ -514,10 +517,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         <div className="p-2 rounded-xl bg-card border border-line text-[10px] text-muted flex items-center justify-between">
                           <span className="flex items-center gap-1 text-people-strong">
                             <Shield className="w-3 h-3" />
-                            Honest dialogue active
+                            {t('Honest dialogue active')}
                           </span>
                           <span className="text-muted">
-                            Replying or declining keeps your Aura protected
+                            {t('Replying or declining keeps your Aura protected')}
                           </span>
                         </div>
 
@@ -535,10 +538,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                                     : 'bg-card text-ink-strong border border-line rounded-tl-none'
                                 }`}
                               >
-                                {msg.text}
+                                {t(msg.text)}
                               </div>
                               <span className="text-[9px] text-subtle mt-1 px-1 font-mono">
-                                {msg.time}
+                                {t(msg.time)}
                               </span>
                             </div>
                           );
@@ -559,7 +562,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         className="px-3 py-1 rounded-xl bg-card border border-line text-muted hover:text-ink-strong text-[11px] font-medium flex items-center gap-1"
                       >
                         <CheckCircle className="w-3 h-3 text-success" />
-                        <span>Politely Pass ("Not right now" · +5 Aura)</span>
+                        <span>{t('Politely Pass ("Not right now" · +5 Aura)')}</span>
                       </button>
 
                       <button
@@ -570,7 +573,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         className="text-[10px] text-subtle hover:text-danger flex items-center gap-1"
                       >
                         <ThumbsDown className="w-3 h-3" />
-                        <span>Mute / Report</span>
+                        <span>{t('Mute / Report')}</span>
                       </button>
                     </div>
 
@@ -581,14 +584,14 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         value={replyInput}
                         onChange={(e) => setReplyInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSendReply()}
-                        placeholder="Type a respectful reply..."
+                        placeholder={t('Type a respectful reply...')}
                         className="flex-1 px-3.5 py-2.5 rounded-xl bg-white border border-line text-xs text-ink-strong focus:outline-none focus:border-people"
                       />
                       <button
                         onClick={() => {
-                          setReplyInput('Up for coffee at Kaph Drury St! My Telegram is @');
+                          setReplyInput(t('Up for coffee at Kaph Drury St! My Telegram is @'));
                         }}
-                        title="Template"
+                        title={t('Template')}
                         className="p-2.5 rounded-xl bg-card border border-line text-muted hover:text-people-strong"
                       >
                         <MessageSquareShare className="w-4 h-4" />
@@ -599,7 +602,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         className="px-4 py-2.5 rounded-xl bg-ink hover:bg-ink-strong text-white font-bold text-xs disabled:opacity-40 flex items-center gap-1.5"
                       >
                         <Send className="w-3.5 h-3.5" />
-                        <span>Reply</span>
+                        <span>{t('Reply')}</span>
                       </button>
                     </div>
                   </div>
@@ -616,7 +619,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           : 'text-muted hover:text-ink-strong'
                       }`}
                     >
-                      Received ({receivedThreads.length})
+                      {t('Received ({n})', { n: receivedThreads.length })}
                     </button>
                     <button
                       onClick={() => setRequestsSubTab('sent')}
@@ -626,7 +629,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                           : 'text-muted hover:text-ink-strong'
                       }`}
                     >
-                      Sent ({sentThreads.length})
+                      {t('Sent ({n})', { n: sentThreads.length })}
                     </button>
                   </div>
 
@@ -662,18 +665,18 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                                   <div className="flex items-center gap-2">
                                     <h4 className="text-sm font-bold text-ink-strong">{thread.peerName}</h4>
                                     <span className="text-[10px] text-subtle font-mono">
-                                      {thread.deliveredTime}
+                                      {t(thread.deliveredTime)}
                                     </span>
                                   </div>
                                   <p className="text-xs text-muted font-mono">
-                                    {thread.peerStatus}
+                                    {t(thread.peerStatus)}
                                   </p>
                                 </div>
                               </div>
 
                               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-warning-soft border border-warning/30 text-warning text-[10px] font-mono">
                                 <Clock className="w-3 h-3 text-warning" />
-                                <span>~{Math.round(thread.timerSecondsRemaining / 60)}m left</span>
+                                <span>{t('~{n}m left', { n: Math.round(thread.timerSecondsRemaining / 60) })}</span>
                               </div>
                             </div>
 
@@ -683,18 +686,18 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                                 <div className="flex items-center justify-between text-people-strong">
                                   <span className="flex items-center gap-1.5">
                                     <Lock className="w-3.5 h-3.5" />
-                                    <span>Protected Intent Message</span>
+                                    <span>{t('Protected Intent Message')}</span>
                                   </span>
                                   <button
                                     onClick={() => handleReveal(thread.id)}
                                     className="text-[11px] font-bold underline hover:text-people-strong"
                                   >
-                                    Reveal
+                                    {t('Reveal')}
                                   </button>
                                 </div>
                               ) : (
                                 <p className="text-ink-strong leading-relaxed">
-                                  "{thread.fullMessage}"
+                                  "{t(thread.fullMessage)}"
                                 </p>
                               )}
                             </div>
@@ -706,7 +709,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                                 className="px-3 py-1.5 rounded-xl bg-card border border-line text-muted hover:text-ink-strong text-xs font-medium flex items-center gap-1"
                               >
                                 <CheckCircle className="w-3.5 h-3.5 text-subtle" />
-                                <span>Polite Pass</span>
+                                <span>{t('Polite Pass')}</span>
                               </button>
 
                               <button
@@ -714,7 +717,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                                 className="px-4 py-1.5 rounded-xl bg-ink hover:bg-ink-strong text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-ink/20"
                               >
                                 <Send className="w-3.5 h-3.5" />
-                                <span>Accept & Chat</span>
+                                <span>{t('Accept & Chat')}</span>
                               </button>
                             </div>
                           </div>
@@ -724,9 +727,9 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       {receivedThreads.length === 0 && (
                         <div className="p-8 text-center bg-card border border-line rounded-3xl space-y-2">
                           <Radio className="w-8 h-8 text-subtle mx-auto" />
-                          <h4 className="text-sm font-bold text-ink-strong">No Pending Received Signals</h4>
+                          <h4 className="text-sm font-bold text-ink-strong">{t('No Pending Received Signals')}</h4>
                           <p className="text-xs text-muted max-w-sm mx-auto">
-                            When someone nearby radiates a connection signal to you, it will arrive here with a safe response window.
+                            {t('When someone nearby radiates a connection signal to you, it will arrive here with a safe response window.')}
                           </p>
                         </div>
                       )}
@@ -751,24 +754,24 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                               <div>
                                 <h4 className="text-xs font-bold text-ink-strong">{thread.peerName}</h4>
                                 <span className="text-[10px] text-muted font-mono">
-                                  {thread.deliveredTime}
+                                  {t(thread.deliveredTime)}
                                 </span>
                               </div>
                             </div>
 
                             <span className="px-2.5 py-1 rounded-full text-[10px] font-mono bg-people-soft text-people-strong border border-people/30 flex items-center gap-1">
                               <Zap className="w-3 h-3 text-people-strong fill-people" />
-                              <span>Radiated</span>
+                              <span>{t('Radiated')}</span>
                             </span>
                           </div>
 
                           <p className="text-xs text-muted bg-white/60 p-2.5 rounded-xl border border-line">
-                            "{thread.fullMessage}"
+                            "{t(thread.fullMessage)}"
                           </p>
 
                           <div className="flex items-center justify-between text-[10px] text-subtle pt-1">
-                            <span>Awaiting polite Dublin reaction</span>
-                            <span className="font-mono text-success">2h safe window active</span>
+                            <span>{t('Awaiting polite reaction')}</span>
+                            <span className="font-mono text-success">{t('2h safe window active')}</span>
                           </div>
                         </div>
                       ))}
@@ -776,15 +779,15 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       {sentThreads.length === 0 && (
                         <div className="p-8 text-center bg-card border border-line rounded-3xl space-y-2">
                           <Zap className="w-8 h-8 text-subtle mx-auto" />
-                          <h4 className="text-sm font-bold text-ink-strong">No Signals Sent Yet Today</h4>
+                          <h4 className="text-sm font-bold text-ink-strong">{t('No Signals Sent Yet Today')}</h4>
                           <p className="text-xs text-muted max-w-sm mx-auto">
-                            Switch to the Resonance tab to explore like-minded people and radiate your first signal!
+                            {t('Switch to the Resonance tab to explore like-minded people and radiate your first signal!')}
                           </p>
                           <button
                             onClick={() => setActiveMainTab('resonance')}
                             className="px-4 py-2 rounded-xl bg-people text-ink-strong text-xs font-bold shadow-md shadow-people/20"
                           >
-                            Explore Resonance Radar
+                            {t('Explore Resonance Radar')}
                           </button>
                         </div>
                       )}
@@ -823,10 +826,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
 
             <div className="space-y-2">
               <span className="text-[11px] font-semibold text-muted uppercase tracking-wider block">
-                Select Respectful Signal Context
+                {t('Select Respectful Signal Context')}
               </span>
               {[
-                'Saw your vibe on Dublin map · Up to connect!',
+                'Saw your vibe on the map · Up to connect!',
                 'Matching coffee & walk interest · Hello from nearby!',
                 'Looking for co-working & focus partner · Open to wave!',
               ].map((note) => (
@@ -839,7 +842,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       : 'bg-card border-line text-muted hover:text-ink-strong'
                   }`}
                 >
-                  {note}
+                  {t(note)}
                 </button>
               ))}
             </div>
@@ -848,12 +851,12 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               <div className="flex items-center justify-between text-muted font-medium">
                 <span className="flex items-center gap-1.5 text-people-strong">
                   <Shield className="w-3.5 h-3.5" />
-                  Intentional Signal Protection
+                  {t('Intentional Signal Protection')}
                 </span>
-                <span className="font-mono text-people-strong">{dailySignalsRemaining} / 10 left</span>
+                <span className="font-mono text-people-strong">{t('{n} / 10 left', { n: dailySignalsRemaining })}</span>
               </div>
               <p className="text-[10px] text-subtle">
-                Radiating a signal rewards +10 Aura points and opens a gentle, spam-free 2-hour window.
+                {t('Radiating a signal rewards +10 Aura points and opens a gentle, spam-free 2-hour window.')}
               </p>
             </div>
 
@@ -862,7 +865,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                 onClick={() => setSignalingUser(null)}
                 className="px-4 py-2 rounded-xl text-xs text-muted hover:text-ink-strong"
               >
-                Cancel
+                {t('Cancel')}
               </button>
 
               {signalSuccessMsg ? (
@@ -876,7 +879,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                   className="px-5 py-2 rounded-xl bg-people text-ink-strong font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-people/20"
                 >
                   <Zap className="w-4 h-4 fill-ink-strong" />
-                  <span>Radiate Signal (+10 Aura)</span>
+                  <span>{t('Radiate Signal (+10 Aura)')}</span>
                 </button>
               )}
             </div>

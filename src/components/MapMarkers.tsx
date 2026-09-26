@@ -5,6 +5,7 @@ import { Briefcase, House, Zap } from 'lucide-react';
 import { DublinPlace, DublinOpportunity, NearbyDublinUser, VisibilityLevel } from '../types';
 import { GraphicIcon } from './GraphicIcon';
 import { COLORS } from '../theme';
+import { useI18n } from '../i18n';
 
 type LatLng = { lat: number; lng: number };
 
@@ -213,6 +214,7 @@ const OpportunityMarker: React.FC<{ opp: DublinOpportunity; selected: boolean; o
   onClick,
 }) => {
   const Icon = OPP_ICONS[opp.type];
+  const { t } = useI18n();
   return (
     <div
       onClick={onClick}
@@ -226,7 +228,7 @@ const OpportunityMarker: React.FC<{ opp: DublinOpportunity; selected: boolean; o
       }}
     >
       <Icon className="w-3.5 h-3.5" strokeWidth={2.25} />
-      {shortPrice(opp.rateOrPrice)}
+      {t(shortPrice(opp.rateOrPrice))}
     </div>
   );
 };
@@ -305,6 +307,7 @@ export const MarkersLayer: React.FC<MarkersLayerProps> = ({
   isOnboarded,
 }) => {
   const map = useMap();
+  const { t } = useI18n();
   const [zoom, setZoom] = useState(14);
 
   useEffect(() => {
@@ -420,7 +423,7 @@ export const MarkersLayer: React.FC<MarkersLayerProps> = ({
             className="absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-ink border-[3px] border-white"
             style={{ boxShadow: SHADOW }}
           />
-          {zoom >= LABEL_MIN_ZOOM && <Label text="You" top={14} />}
+          {zoom >= LABEL_MIN_ZOOM && <Label text={t('You')} top={14} />}
         </HtmlOverlay>
       )}
 

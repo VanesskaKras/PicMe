@@ -11,6 +11,7 @@ import {
   Check
 } from 'lucide-react';
 import { DublinPlace } from '../types';
+import { useI18n } from '../i18n';
 
 interface AddPlaceModalProps {
   isOpen: boolean;
@@ -46,6 +47,7 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
   onAddPlace,
   userDistrict = 'Portobello'
 }) => {
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [category, setCategory] = useState<DublinPlace['category']>('cafe');
   const [district, setDistrict] = useState(userDistrict);
@@ -62,7 +64,7 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
     e.preventDefault();
     if (!name.trim()) return;
 
-    // Generate slight offset coordinates around Dublin center/district
+    // Generate slight offset coordinates around center/district
     const baseLat = 53.3330;
     const baseLng = -6.2655;
     const offsetLat = (Math.random() - 0.5) * 0.015;
@@ -86,8 +88,8 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
       name: name.trim(),
       category,
       district,
-      address: address.trim() || `${district}, Dublin`,
-      liveContext: liveContext.trim() || 'New vibrant Dublin community spot added by user radar',
+      address: address.trim() || `${district}`,
+      liveContext: liveContext.trim() || t('New vibrant community spot added by user radar'),
       isQuietHour,
       hasLiveEvent,
       eventTime: hasLiveEvent && eventTime.trim() ? eventTime.trim() : undefined,
@@ -118,8 +120,8 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
               <MapPin className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-ink-strong">Add New Place</h3>
-              <p className="text-[11px] text-muted">Broadcast a spot to the live Dublin radar</p>
+              <h3 className="font-bold text-base text-ink-strong">{t('Add New Place')}</h3>
+              <p className="text-[11px] text-muted">{t('Broadcast a spot to the live radar')}</p>
             </div>
           </div>
           <button
@@ -135,14 +137,14 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
           {/* Place Name */}
           <div>
             <label className="block text-[11px] font-semibold text-muted mb-1.5">
-              Place Name *
+              {t('Place Name *')}
             </label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Kaph Coffee, The Bernard Shaw, Canal Bench #4"
+              placeholder={t('e.g. Kaph Coffee, The Bernard Shaw, Canal Bench #4')}
               className="w-full px-3.5 py-2.5 bg-card border border-line rounded-xl text-ink-strong placeholder-subtle focus:outline-none focus:border-place"
             />
           </div>
@@ -150,7 +152,7 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
           {/* Category Selector */}
           <div>
             <label className="block text-[11px] font-semibold text-muted mb-1.5">
-              Category
+              {t('Category')}
             </label>
             <div className="grid grid-cols-2 @md:grid-cols-3 gap-2">
               {CATEGORIES.map((cat) => {
@@ -168,7 +170,7 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
                     }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
-                    <span className="truncate">{cat.label}</span>
+                    <span className="truncate">{t(cat.label)}</span>
                   </button>
                 );
               })}
@@ -179,7 +181,7 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
           <div className="grid grid-cols-1 @md:grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-semibold text-muted mb-1.5">
-                Dublin District
+                {t('District')}
               </label>
               <select
                 value={district}
@@ -196,13 +198,13 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
 
             <div>
               <label className="block text-[11px] font-semibold text-muted mb-1.5">
-                Street / Location
+                {t('Street / Location')}
               </label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="e.g. 14 South William St, D2"
+                placeholder={t('e.g. 14 South William St, D2')}
                 className="w-full px-3 py-2.5 bg-card border border-line rounded-xl text-ink-strong placeholder-subtle focus:outline-none focus:border-place text-xs"
               />
             </div>
@@ -211,13 +213,13 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
           {/* Live Context / Atmosphere */}
           <div>
             <label className="block text-[11px] font-semibold text-muted mb-1.5">
-              Live Vibe & Atmosphere Note
+              {t('Live Vibe & Atmosphere Note')}
             </label>
             <textarea
               rows={2}
               value={liveContext}
               onChange={(e) => setLiveContext(e.target.value)}
-              placeholder="e.g. Sun-drenched outdoor benches, fast WiFi, calm acoustic jazz background"
+              placeholder={t('e.g. Sun-drenched outdoor benches, fast WiFi, calm acoustic jazz background')}
               className="w-full px-3.5 py-2.5 bg-card border border-line rounded-xl text-ink-strong placeholder-subtle focus:outline-none focus:border-place text-xs resize-none"
             />
           </div>
@@ -225,13 +227,13 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
           {/* Tags */}
           <div>
             <label className="block text-[11px] font-semibold text-muted mb-1.5">
-              Tags (comma-separated)
+              {t('Tags (comma-separated)')}
             </label>
             <input
               type="text"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="Specialty Coffee, WiFi, Dog Friendly, Canal Walks"
+              placeholder={t('Specialty Coffee, WiFi, Dog Friendly, Canal Walks')}
               className="w-full px-3.5 py-2.5 bg-card border border-line rounded-xl text-ink-strong placeholder-subtle focus:outline-none focus:border-place text-xs"
             />
           </div>
@@ -248,8 +250,8 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
               }`}
             >
               <div>
-                <span className="font-semibold block text-[11px]">Quiet Focus Zone</span>
-                <span className="text-[10px] text-subtle">Low noise levels</span>
+                <span className="font-semibold block text-[11px]">{t('Quiet Focus Zone')}</span>
+                <span className="text-[10px] text-subtle">{t('Low noise levels')}</span>
               </div>
               <div className={`w-4 h-4 rounded flex items-center justify-center border ${
                 isQuietHour ? 'bg-place border-place text-ink-strong' : 'border-line'
@@ -268,8 +270,8 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
               }`}
             >
               <div>
-                <span className="font-semibold block text-[11px]">Live Event Today</span>
-                <span className="text-[10px] text-subtle">Music or meetups</span>
+                <span className="font-semibold block text-[11px]">{t('Live Event Today')}</span>
+                <span className="text-[10px] text-subtle">{t('Music or meetups')}</span>
               </div>
               <div className={`w-4 h-4 rounded flex items-center justify-center border ${
                 hasLiveEvent ? 'bg-people border-people text-ink-strong' : 'border-line'
@@ -282,13 +284,13 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
           {hasLiveEvent && (
             <div>
               <label className="block text-[11px] font-semibold text-muted mb-1">
-                Event Time / Detail
+                {t('Event Time / Detail')}
               </label>
               <input
                 type="text"
                 value={eventTime}
                 onChange={(e) => setEventTime(e.target.value)}
-                placeholder="e.g. 7:30 PM Acoustic Jam / Tech Demo"
+                placeholder={t('e.g. 7:30 PM Acoustic Jam / Tech Demo')}
                 className="w-full px-3 py-2 bg-card border border-line rounded-xl text-ink-strong text-xs focus:outline-none focus:border-place"
               />
             </div>
@@ -301,7 +303,7 @@ export const AddPlaceModal: React.FC<AddPlaceModalProps> = ({
               className="w-full py-3 rounded-2xl bg-place hover:bg-place-hover text-ink-strong font-bold text-xs shadow-lg shadow-place/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
             >
               <Sparkles className="w-4 h-4" />
-              <span>Broadcast Place to Dublin Radar (+15 Aura)</span>
+              <span>{t('Broadcast Place to Radar (+15 Aura)')}</span>
             </button>
           </div>
         </form>

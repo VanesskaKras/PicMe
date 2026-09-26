@@ -2,7 +2,7 @@
 // (Google Maps circles, Leaflet paths, inline styles). Keep in sync with @theme.
 export const COLORS = {
   people: '#efaca4',
-  place: '#9fdcd0',
+  place: '#fc8a2d',
   opp: '#badd7f',
   ink: '#324517',
   canvas: '#eef2e4',

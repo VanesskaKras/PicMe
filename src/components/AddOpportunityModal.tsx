@@ -9,6 +9,7 @@ import {
   Check
 } from 'lucide-react';
 import { DublinOpportunity } from '../types';
+import { useI18n } from '../i18n';
 
 interface AddOpportunityModalProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ const TYPES: { id: DublinOpportunity['type']; label: string; icon: any; desc: st
 ];
 
 const DUBLIN_DISTRICTS = [
-  'Portobello, Dublin 8',
+  'Portobello',
   'Grand Canal Dock, D2',
   'Docklands / IFSC, D1',
   'Grafton Quarter, D2',
@@ -42,12 +43,13 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
   onClose,
   onAddOpportunity,
   userName = 'Alex Brennan',
-  userDistrict = 'Portobello, Dublin 8'
+  userDistrict = 'Portobello'
 }) => {
+  const { t } = useI18n();
   const [type, setType] = useState<DublinOpportunity['type']>('housing');
   const [title, setTitle] = useState('');
-  const [categoryTag, setCategoryTag] = useState('Flatshare / Rental');
-  const [rateOrPrice, setRateOrPrice] = useState('€850 / month');
+  const [categoryTag, setCategoryTag] = useState(() => t('Flatshare / Rental'));
+  const [rateOrPrice, setRateOrPrice] = useState(() => t('€850 / month'));
   const [district, setDistrict] = useState(userDistrict);
   const [description, setDescription] = useState('');
   const [expiresInDays, setExpiresInDays] = useState(5);
@@ -58,14 +60,14 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
   const handleTypeSelect = (selectedType: DublinOpportunity['type']) => {
     setType(selectedType);
     if (selectedType === 'housing') {
-      setCategoryTag('Flatshare / Rental');
-      setRateOrPrice('€850 / month');
+      setCategoryTag(t('Flatshare / Rental'));
+      setRateOrPrice(t('€850 / month'));
     } else if (selectedType === 'job') {
-      setCategoryTag('Co-Founder / Contract');
-      setRateOrPrice('€40k - €60k / Competitive');
+      setCategoryTag(t('Co-Founder / Contract'));
+      setRateOrPrice(t('€40k - €60k / Competitive'));
     } else {
-      setCategoryTag('Social & Community');
-      setRateOrPrice('Free / Bring Good Vibes');
+      setCategoryTag(t('Social & Community'));
+      setRateOrPrice(t('Free / Bring Good Vibes'));
     }
   };
 
@@ -93,9 +95,9 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
       id: `opp-${Date.now()}`,
       type,
       title: title.trim(),
-      organizer: `${userName} (Verified Resident)`,
-      categoryTag: categoryTag.trim() || 'Community Opportunity',
-      rateOrPrice: rateOrPrice.trim() || 'Open to Discussion',
+      organizer: t('{name} (Verified Resident)', { name: userName }),
+      categoryTag: categoryTag.trim() || t('Community Opportunity'),
+      rateOrPrice: rateOrPrice.trim() || t('Open to Discussion'),
       district,
       lat: baseLat + offsetLat,
       lng: baseLng + offsetLng,
@@ -124,8 +126,8 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
               <Briefcase className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-ink-strong">Post New Opportunity</h3>
-              <p className="text-[11px] text-muted">Housing, tech co-founders, or Dublin community gigs</p>
+              <h3 className="font-bold text-base text-ink-strong">{t('Post New Opportunity')}</h3>
+              <p className="text-[11px] text-muted">{t('Housing, tech co-founders, or community gigs')}</p>
             </div>
           </div>
           <button
@@ -141,28 +143,28 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
           {/* Type Selector */}
           <div>
             <label className="block text-[11px] font-semibold text-muted mb-1.5">
-              Opportunity Type *
+              {t('Opportunity Type *')}
             </label>
             <div className="grid grid-cols-1 @md:grid-cols-3 gap-2">
-              {TYPES.map((t) => {
-                const Icon = t.icon;
-                const isSelected = type === t.id;
+              {TYPES.map((type_) => {
+                const Icon = type_.icon;
+                const isSelected = type === type_.id;
                 return (
                   <button
                     type="button"
-                    key={t.id}
-                    onClick={() => handleTypeSelect(t.id)}
+                    key={type_.id}
+                    onClick={() => handleTypeSelect(type_.id)}
                     className={`flex flex-col p-2.5 rounded-xl border text-left transition-all ${
                       isSelected
-                        ? `${t.color} font-semibold ring-1 ring-opp`
+                        ? `${type_.color} font-semibold ring-1 ring-opp`
                         : 'bg-card/90 border-line text-muted hover:text-ink-strong'
                     }`}
                   >
                     <div className="flex items-center gap-1.5 mb-1">
                       <Icon className="w-4 h-4 shrink-0" />
-                      <span className="font-semibold text-xs">{t.label}</span>
+                      <span className="font-semibold text-xs">{t(type_.label)}</span>
                     </div>
-                    <span className="text-[10px] text-subtle leading-tight">{t.desc}</span>
+                    <span className="text-[10px] text-subtle leading-tight">{t(type_.desc)}</span>
                   </button>
                 );
               })}
@@ -172,7 +174,7 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
           {/* Title */}
           <div>
             <label className="block text-[11px] font-semibold text-muted mb-1.5">
-              Title *
+              {t('Title *')}
             </label>
             <input
               type="text"
@@ -181,10 +183,10 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
               onChange={(e) => setTitle(e.target.value)}
               placeholder={
                 type === 'housing'
-                  ? 'e.g. Sunny Double Room near Grand Canal Towpath'
+                  ? t('e.g. Sunny Double Room near Grand Canal Towpath')
                   : type === 'job'
-                  ? 'e.g. Senior Frontend Engineer (React/TypeScript)'
-                  : 'e.g. Saturday Morning Canal Running Crew'
+                  ? t('e.g. Senior Frontend Engineer (React/TypeScript)')
+                  : t('e.g. Saturday Morning Canal Running Crew')
               }
               className="w-full px-3.5 py-2.5 bg-card border border-line rounded-xl text-ink-strong placeholder-subtle focus:outline-none focus:border-opp"
             />
@@ -194,26 +196,26 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
           <div className="grid grid-cols-1 @md:grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-semibold text-muted mb-1.5">
-                Category Tag
+                {t('Category Tag')}
               </label>
               <input
                 type="text"
                 value={categoryTag}
                 onChange={(e) => setCategoryTag(e.target.value)}
-                placeholder="e.g. Flatshare, Co-Founder, Run Club"
+                placeholder={t('e.g. Flatshare, Co-Founder, Run Club')}
                 className="w-full px-3 py-2.5 bg-card border border-line rounded-xl text-ink-strong text-xs focus:outline-none focus:border-opp"
               />
             </div>
 
             <div>
               <label className="block text-[11px] font-semibold text-muted mb-1.5">
-                Rate / Compensation / Rent
+                {t('Rate / Compensation / Rent')}
               </label>
               <input
                 type="text"
                 value={rateOrPrice}
                 onChange={(e) => setRateOrPrice(e.target.value)}
-                placeholder="e.g. €850 / mo, Equity, Free"
+                placeholder={t('e.g. €850 / mo, Equity, Free')}
                 className="w-full px-3 py-2.5 bg-card border border-line rounded-xl text-ink-strong text-xs focus:outline-none focus:border-opp"
               />
             </div>
@@ -223,7 +225,7 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
           <div className="grid grid-cols-1 @md:grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-semibold text-muted mb-1.5">
-                Dublin District
+                {t('District')}
               </label>
               <select
                 value={district}
@@ -240,17 +242,17 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
 
             <div>
               <label className="block text-[11px] font-semibold text-muted mb-1.5">
-                Listing Expiration
+                {t('Listing Expiration')}
               </label>
               <select
                 value={expiresInDays}
                 onChange={(e) => setExpiresInDays(Number(e.target.value))}
                 className="w-full px-3 py-2.5 bg-card border border-line rounded-xl text-ink-strong focus:outline-none focus:border-opp text-xs"
               >
-                <option value={3}>3 Days (Quick match)</option>
-                <option value={7}>7 Days (Standard)</option>
-                <option value={14}>14 Days (Extended)</option>
-                <option value={30}>30 Days (Long-term)</option>
+                <option value={3}>{t('3 Days (Quick match)')}</option>
+                <option value={7}>{t('7 Days (Standard)')}</option>
+                <option value={14}>{t('14 Days (Extended)')}</option>
+                <option value={30}>{t('30 Days (Long-term)')}</option>
               </select>
             </div>
           </div>
@@ -258,14 +260,14 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
           {/* Description */}
           <div>
             <label className="block text-[11px] font-semibold text-muted mb-1.5">
-              Full Description & Requirements *
+              {t('Full Description & Requirements *')}
             </label>
             <textarea
               required
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the opportunity, key requirements, vibe, contact expectations, and what kind of Dublin collaborator you're looking for..."
+              placeholder={t("Describe the opportunity, key requirements, vibe, contact expectations, and what kind of collaborator you're looking for...")}
               className="w-full px-3.5 py-2.5 bg-card border border-line rounded-xl text-ink-strong placeholder-subtle focus:outline-none focus:border-opp text-xs resize-none"
             />
           </div>
@@ -273,13 +275,13 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
           {/* Target Audience / Tags */}
           <div>
             <label className="block text-[11px] font-semibold text-muted mb-1.5">
-              Target Audience / Relevant Tags (comma-separated)
+              {t('Target Audience / Relevant Tags (comma-separated)')}
             </label>
             <input
               type="text"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="Newcomer, IT & Tech, Specialty Coffee, Creative"
+              placeholder={t('Newcomer, IT & Tech, Specialty Coffee, Creative')}
               className="w-full px-3.5 py-2.5 bg-card border border-line rounded-xl text-ink-strong placeholder-subtle focus:outline-none focus:border-opp text-xs"
             />
           </div>
@@ -288,9 +290,9 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
           <div className="p-3 rounded-xl bg-opp-soft border border-opp/30 flex items-start gap-2.5 text-[11px] text-opp-strong">
             <ShieldCheck className="w-4 h-4 shrink-0 text-opp-strong mt-0.5" />
             <div>
-              <span className="font-semibold block">Aura Verified Post</span>
+              <span className="font-semibold block">{t('Aura Verified Post')}</span>
               <span className="text-[10px] text-opp-strong">
-                Your post will carry your verified Dublin resident badge. Earn +25 Aura upon publication.
+                {t('Your post will carry your verified resident badge. Earn +25 Aura upon publication.')}
               </span>
             </div>
           </div>
@@ -302,7 +304,7 @@ export const AddOpportunityModal: React.FC<AddOpportunityModalProps> = ({
               className="w-full py-3 rounded-2xl bg-opp hover:bg-opp-hover text-ink-strong font-bold text-xs shadow-lg shadow-opp/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
             >
               <Sparkles className="w-4 h-4" />
-              <span>Publish Opportunity (+25 Aura)</span>
+              <span>{t('Publish Opportunity (+25 Aura)')}</span>
             </button>
           </div>
         </form>

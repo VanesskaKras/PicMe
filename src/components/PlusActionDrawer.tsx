@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { UserProfile } from '../types';
 import { GraphicIcon } from './GraphicIcon';
+import { useI18n } from '../i18n';
 
 interface PlusActionDrawerProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export const PlusActionDrawer: React.FC<PlusActionDrawerProps> = ({
   onOpenNewPlace,
   onOpenNewOpportunity,
 }) => {
+  const { t } = useI18n();
   if (!isOpen) return null;
 
   return (
@@ -42,8 +44,8 @@ export const PlusActionDrawer: React.FC<PlusActionDrawerProps> = ({
               <Plus className="w-5 h-5 stroke-[2.5]" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-ink-strong">Create & Broadcast</h3>
-              <p className="text-[11px] text-muted">Share presence, spots & opportunities</p>
+              <h3 className="font-bold text-base text-ink-strong">{t('Create & Broadcast')}</h3>
+              <p className="text-[11px] text-muted">{t('Share presence, spots & opportunities')}</p>
             </div>
           </div>
           <button
@@ -74,12 +76,12 @@ export const PlusActionDrawer: React.FC<PlusActionDrawerProps> = ({
                   <GraphicIcon nameOrEmoji={currentUser.mood?.emoji || '✨'} size="xs" className="text-people-strong" />
                 </span>
                 <span className="text-xs font-bold text-ink-strong uppercase tracking-wider">
-                  Status & Mood
+                  {t('Status & Mood')}
                 </span>
               </div>
               <span className="text-[10px] font-semibold text-people-strong bg-people-soft border border-people/30 px-2 py-0.5 rounded-full flex items-center gap-1 group-hover:bg-people group-hover:text-ink-strong transition-colors">
                 <Sparkles className="w-3 h-3" />
-                <span>Update</span>
+                <span>{t('Update')}</span>
               </span>
             </div>
 
@@ -91,10 +93,10 @@ export const PlusActionDrawer: React.FC<PlusActionDrawerProps> = ({
                 </div>
                 <div className="truncate">
                   <div className="text-xs font-semibold text-ink-strong truncate flex items-center gap-1.5">
-                    <span>{currentUser.mood?.text || 'Craving specialty coffee'}</span>
+                    <span>{t(currentUser.mood?.text || 'Craving specialty coffee')}</span>
                   </div>
                   <div className="text-[10px] text-muted truncate flex items-center gap-2 mt-0.5">
-                    <span className="text-people-strong font-medium">{currentUser.status || 'Open to Connect'}</span>
+                    <span className="text-people-strong font-medium">{t(currentUser.status || 'Open to Connect')}</span>
                     {currentUser.mood?.note && (
                       <>
                         <span>•</span>
@@ -124,13 +126,13 @@ export const PlusActionDrawer: React.FC<PlusActionDrawerProps> = ({
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h4 className="text-xs font-bold text-ink-strong">New Place</h4>
+                  <h4 className="text-xs font-bold text-ink-strong">{t('New Place')}</h4>
                   <span className="text-[9px] px-1.5 py-0.2 rounded bg-place-soft text-place-strong font-semibold border border-place/20">
                     +15 Aura
                   </span>
                 </div>
                 <p className="text-[11px] text-muted mt-0.5">
-                  Add a cafe, pub, park, or coworking spot to the map
+                  {t('Add a cafe, pub, park, or coworking spot to the map')}
                 </p>
               </div>
             </div>
@@ -153,13 +155,13 @@ export const PlusActionDrawer: React.FC<PlusActionDrawerProps> = ({
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h4 className="text-xs font-bold text-ink-strong">Opportunity</h4>
+                  <h4 className="text-xs font-bold text-ink-strong">{t('Opportunity')}</h4>
                   <span className="text-[9px] px-1.5 py-0.2 rounded bg-opp-soft text-opp-strong font-semibold border border-opp/20">
                     +25 Aura
                   </span>
                 </div>
                 <p className="text-[11px] text-muted mt-0.5">
-                  Post housing sublet, tech job, or community meetup
+                  {t('Post housing sublet, tech job, or community meetup')}
                 </p>
               </div>
             </div>
@@ -170,7 +172,7 @@ export const PlusActionDrawer: React.FC<PlusActionDrawerProps> = ({
         {/* Bottom Tip */}
         <div className="p-3 px-6 bg-card border-t border-line text-center">
           <p className="text-[10px] text-subtle font-medium">
-            Active in Dublin · Contributions build your verified Urban Aura
+            {t('Active · Contributions build your verified Urban Aura')}
           </p>
         </div>
       </div>

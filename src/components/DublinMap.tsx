@@ -3,6 +3,7 @@ import L from 'leaflet';
 import { DublinPlace, DublinOpportunity, NearbyDublinUser, VisibilityLevel } from '../types';
 import { getGraphicSvgString } from './GraphicIcon';
 import { COLORS } from '../theme';
+import { useI18n } from '../i18n';
 
 interface DublinMapProps {
   center: { lat: number; lng: number };
@@ -47,6 +48,7 @@ export const DublinMap: React.FC<DublinMapProps> = ({
   isOnboarded,
   onRequireOnboarding,
 }) => {
+  const { t } = useI18n();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
@@ -186,7 +188,7 @@ export const DublinMap: React.FC<DublinMapProps> = ({
         const marker = L.marker([user.lat, user.lng], { icon: personIcon });
         marker.on('click', () => {
           if (!isOnboarded) {
-            onRequireOnboarding(`To view ${user.name}'s profile and match mutual signals, complete your 5-step Dublin context profile.`);
+            onRequireOnboarding(t("To view {name}'s profile and mutual resonance signals, complete your context pass.", { name: user.name }));
           } else {
             onSelectUser(user);
           }
@@ -230,7 +232,7 @@ export const DublinMap: React.FC<DublinMapProps> = ({
         const marker = L.marker([place.lat, place.lng], { icon: placeIcon });
         marker.on('click', () => {
           if (!isOnboarded) {
-            onRequireOnboarding(`To interact with ${place.name} and view verified community hours, set up your profile context.`);
+            onRequireOnboarding(t('To interact with {name} and view verified community hours, set up your profile context.', { name: place.name }));
           } else {
             onSelectPlace(place);
           }
@@ -273,7 +275,7 @@ export const DublinMap: React.FC<DublinMapProps> = ({
         const marker = L.marker([opp.lat, opp.lng], { icon: oppIcon });
         marker.on('click', () => {
           if (!isOnboarded) {
-            onRequireOnboarding(`To access Dublin housing listings, job opportunities, and peer activities, complete onboarding.`);
+            onRequireOnboarding(t('To access housing listings, job opportunities, and peer activities, complete onboarding.'));
           } else {
             onSelectOpportunity(opp);
           }

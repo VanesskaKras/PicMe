@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { DublinPlace, DublinOpportunity } from '../types';
 import { GraphicIcon } from './GraphicIcon';
+import { useI18n } from '../i18n';
 
 interface ItemDetailDrawerProps {
   place: DublinPlace | null;
@@ -33,6 +34,7 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
   onBookmark,
   onAction,
 }) => {
+  const { t } = useI18n();
   if (!place && !opportunity) return null;
 
   return (
@@ -75,16 +77,16 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-place-strong flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-place-strong" />
-                  Live Urban Pulse
+                  {t('Live Urban Pulse')}
                 </span>
                 {place.isQuietHour && (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-place-soft text-place-strong border border-place/40">
-                    Quiet Focus Hour
+                    {t('Quiet Focus Hour')}
                   </span>
                 )}
                 {place.hasLiveEvent && (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-people-soft text-people-strong border border-people/40 animate-pulse">
-                    Live Event {place.eventTime}
+                    {t('Live Event')} {place.eventTime}
                   </span>
                 )}
               </div>
@@ -98,28 +100,28 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
                   key={tag}
                   className="px-2.5 py-1 rounded-lg text-xs font-medium bg-card text-muted border border-line"
                 >
-                  {tag}
+                  {t(tag)}
                 </span>
               ))}
               <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold text-success bg-success-soft border border-success/30 flex items-center gap-1">
                 <ShieldCheck className="w-3 h-3 text-success" />
-                {place.auraScore} Aura Trust
+                {t('{n} Aura Trust', { n: place.auraScore })}
               </span>
             </div>
 
             {/* Actions */}
             <div className="pt-2 flex items-center gap-2">
               <button
-                onClick={() => onAction?.(`Viewing walking route to ${place.name}`)}
+                onClick={() => onAction?.(t('Viewing walking route to {name}', { name: place.name }))}
                 className="flex-1 py-2.5 rounded-xl bg-place text-ink-strong font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-place/20 hover:opacity-95"
               >
                 <Navigation className="w-3.5 h-3.5" />
-                Navigate in Dublin
+                {t('Navigate')}
               </button>
               <button
                 onClick={() => onBookmark?.(place.name)}
                 className="px-3.5 py-2.5 rounded-xl bg-card border border-line text-muted hover:text-ink-strong flex items-center justify-center"
-                title="Bookmark Place"
+                title={t('Bookmark Place')}
               >
                 <Bookmark className="w-4 h-4" />
               </button>
@@ -138,11 +140,11 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono uppercase tracking-wider text-opp-strong font-bold">
-                      {opportunity.categoryTag}
+                      {t(opportunity.categoryTag)}
                     </span>
                     <span className="text-[10px] text-subtle">·</span>
                     <span className="text-[10px] text-warning font-mono">
-                      Expires in {opportunity.expiresInDays}d
+                      {t('Expires in {n}d', { n: opportunity.expiresInDays })}
                     </span>
                   </div>
                   <h3 className="text-base font-bold text-ink-strong tracking-tight leading-snug">
@@ -162,13 +164,13 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
             {/* Price & Location Banner */}
             <div className="p-3 rounded-2xl bg-card border border-opp/30 flex items-center justify-between">
               <div>
-                <span className="text-[10px] text-muted block">Rate / Price</span>
+                <span className="text-[10px] text-muted block">{t('Rate / Price')}</span>
                 <span className="text-base font-bold font-mono text-opp-strong">
                   {opportunity.rateOrPrice}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-muted block">Dublin Location</span>
+                <span className="text-[10px] text-muted block">{t('Location')}</span>
                 <span className="text-xs font-semibold text-ink-strong">
                   {opportunity.district}
                 </span>
@@ -182,11 +184,11 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
 
             {/* Organizer & Trust */}
             <div className="p-2.5 rounded-xl bg-card/60 border border-line flex items-center justify-between text-xs">
-              <span className="text-muted">Listed by <strong className="text-ink-strong">{opportunity.organizer}</strong></span>
+              <span className="text-muted">{t('Listed by')} <strong className="text-ink-strong">{opportunity.organizer}</strong></span>
               {opportunity.verifiedByAura && (
                 <span className="flex items-center gap-1 text-[11px] font-medium text-success">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  Aura Verified
+                  {t('Aura Verified')}
                 </span>
               )}
             </div>
@@ -194,16 +196,16 @@ export const ItemDetailDrawer: React.FC<ItemDetailDrawerProps> = ({
             {/* Actions */}
             <div className="pt-2 flex items-center gap-2">
               <button
-                onClick={() => onAction?.(`Signal sent for ${opportunity.title}`)}
+                onClick={() => onAction?.(t('Signal sent for {title}', { title: opportunity.title }))}
                 className="flex-1 py-2.5 rounded-xl bg-opp text-ink-strong font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-opp/20 hover:opacity-95"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                {opportunity.type === 'housing' ? 'Contact Resident / Landlord' : opportunity.type === 'job' ? 'Apply via Dublin Network' : 'Join Activity Circle'}
+                {opportunity.type === 'housing' ? t('Contact Resident / Landlord') : opportunity.type === 'job' ? t('Apply via Network') : t('Join Activity Circle')}
               </button>
               <button
                 onClick={() => onBookmark?.(opportunity.title)}
                 className="px-3.5 py-2.5 rounded-xl bg-card border border-line text-muted hover:text-ink-strong flex items-center justify-center"
-                title="Save Opportunity"
+                title={t('Save Opportunity')}
               >
                 <Bookmark className="w-4 h-4" />
               </button>

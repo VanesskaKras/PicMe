@@ -17,6 +17,7 @@ import {
   OFFERING_OPTIONS
 } from '../data/dublinData';
 import { IdentityType, ActivityType, VisibilityLevel, UserProfile } from '../types';
+import { useI18n } from '../i18n';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   onClosePreview,
   requiredReason,
 }) => {
+  const { t } = useI18n();
   const [step, setStep] = useState<number>(0);
   // Profile state
   const [name, setName] = useState<string>('Alex Brennan');
@@ -93,7 +95,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   const handleFinish = () => {
     onComplete({
-      name: name.trim() || 'Dublin Explorer',
+      name: name.trim() || t('Explorer'),
       handle: handle.trim() || '@explorer',
       identity,
       activity,
@@ -118,9 +120,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             </div>
             <div>
               <h2 className="text-base font-bold tracking-tight text-ink-strong flex items-center gap-1.5">
-                PicMe <span className="text-xs text-ink font-mono font-normal">Dublin</span>
+                PicMe
               </h2>
-              <p className="text-[11px] text-muted">Context Entry Pass</p>
+              <p className="text-[11px] text-muted">{t('Context Entry Pass')}</p>
             </div>
           </div>
 
@@ -144,7 +146,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 onClick={onClosePreview}
                 className="text-xs text-muted hover:text-ink-strong px-2 py-1 rounded-lg hover:bg-line"
               >
-                Inspect Map
+                {t('Inspect Map')}
               </button>
             )}
           </div>
@@ -158,24 +160,23 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               <div className="p-4 rounded-2xl bg-card border border-line space-y-3">
                 <div className="flex items-center gap-2 text-ink font-semibold text-sm">
                   <Info className="w-4 h-4 text-ink shrink-0" />
-                  <span>Why PicMe Requires Your Profile Context</span>
+                  <span>{t('Why PicMe Requires Your Profile Context')}</span>
                 </div>
                 <p className="text-xs text-muted leading-relaxed">
-                  You are looking at the live Dublin map. However, until PicMe understands who you are and what you seek,
-                  it cannot calculate mutual resonance or display safe surrounding signals.
+                  {t('You are looking at the live map. However, until PicMe understands who you are and what you seek, it cannot calculate mutual resonance or display safe surrounding signals.')}
                 </p>
                 <div className="p-3 rounded-xl bg-white/60 border border-line text-[11px] text-muted space-y-2">
                   <div className="flex items-start gap-2">
                     <Check className="w-3.5 h-3.5 text-ink mt-0.5 shrink-0" />
-                    <span><strong className="text-ink-strong">Zero Random Spam:</strong> We never broadcast you to strangers. Matching requires shared context and mutual openness.</span>
+                    <span><strong className="text-ink-strong">{t('Zero Random Spam:')}</strong> {t('We never broadcast you to strangers. Matching requires shared context and mutual openness.')}</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-3.5 h-3.5 text-ink mt-0.5 shrink-0" />
-                    <span><strong className="text-ink-strong">Hyper-Local Layers:</strong> Programmers see tech opportunities; artists see creative gigs; newcomers see rental leads.</span>
+                    <span><strong className="text-ink-strong">{t('Hyper-Local Layers:')}</strong> {t('Programmers see tech opportunities; artists see creative gigs; newcomers see rental leads.')}</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Check className="w-3.5 h-3.5 text-ink mt-0.5 shrink-0" />
-                    <span><strong className="text-ink-strong">Privacy by Geometry:</strong> Raw coordinates never leave your device. You choose exact point, 500m blurred zone, or ghost mode.</span>
+                    <span><strong className="text-ink-strong">{t('Privacy by Geometry:')}</strong> {t('Raw coordinates never leave your device. You choose exact point, 500m blurred zone, or ghost mode.')}</span>
                   </div>
                 </div>
               </div>
@@ -187,20 +188,20 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               )}
 
               <div className="space-y-3 pt-2">
-                <label className="block text-xs font-semibold text-muted">Choose your Dublin nickname & handle</label>
+                <label className="block text-xs font-semibold text-muted">{t('Choose your nickname & handle')}</label>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <span className="text-[11px] text-muted block mb-1">Display Name</span>
+                    <span className="text-[11px] text-muted block mb-1">{t('Display Name')}</span>
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Alex"
+                      placeholder={t('e.g. Alex')}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-card border border-line text-sm text-ink-strong focus:outline-none focus:border-ink"
                     />
                   </div>
                   <div>
-                    <span className="text-[11px] text-muted block mb-1">City Handle</span>
+                    <span className="text-[11px] text-muted block mb-1">{t('City Handle')}</span>
                     <input
                       type="text"
                       value={handle}
@@ -218,9 +219,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">Step 1 of 5 · Identity</span>
-                <h3 className="text-lg font-bold text-ink-strong mt-0.5">Who are you in Dublin?</h3>
-                <p className="text-xs text-muted mt-1">This sets your primary urban lens and baseline discovery weight.</p>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">{t('Step 1 of 5 · Identity')}</span>
+                <h3 className="text-lg font-bold text-ink-strong mt-0.5">{t('Who are you?')}</h3>
+                <p className="text-xs text-muted mt-1">{t('This sets your primary urban lens and baseline discovery weight.')}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
@@ -238,11 +239,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     >
                       <div className="flex items-center justify-between w-full mb-1">
                         <span className={`text-sm font-semibold ${isSelected ? 'text-people-strong' : 'text-ink-strong'}`}>
-                          {opt.type}
+                          {t(opt.type)}
                         </span>
                         {isSelected && <Check className="w-3.5 h-3.5 text-people-strong" />}
                       </div>
-                      <span className="text-[11px] text-muted leading-snug">{opt.description}</span>
+                      <span className="text-[11px] text-muted leading-snug">{t(opt.description)}</span>
                     </button>
                   );
                 })}
@@ -254,9 +255,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           {step === 2 && (
             <div className="space-y-4">
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">Step 2 of 5 · Activity</span>
-                <h3 className="text-lg font-bold text-ink-strong mt-0.5">What is your primary craft or sphere?</h3>
-                <p className="text-xs text-muted mt-1">Matches you with adjacent professionals and relevant Dublin opportunities.</p>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">{t('Step 2 of 5 · Activity')}</span>
+                <h3 className="text-lg font-bold text-ink-strong mt-0.5">{t('What is your primary craft or sphere?')}</h3>
+                <p className="text-xs text-muted mt-1">{t('Matches you with adjacent professionals and relevant opportunities.')}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
@@ -274,11 +275,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     >
                       <div className="flex items-center justify-between w-full mb-1">
                         <span className={`text-sm font-semibold ${isSelected ? 'text-people-strong' : 'text-ink-strong'}`}>
-                          {opt.type}
+                          {t(opt.type)}
                         </span>
                         {isSelected && <Check className="w-3.5 h-3.5 text-people-strong" />}
                       </div>
-                      <span className="text-[11px] text-muted leading-snug">{opt.description}</span>
+                      <span className="text-[11px] text-muted leading-snug">{t(opt.description)}</span>
                     </button>
                   );
                 })}
@@ -290,9 +291,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           {step === 3 && (
             <div className="space-y-4">
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">Step 3 of 5 · Interests</span>
-                <h3 className="text-lg font-bold text-ink-strong mt-0.5">What sparks you outside work?</h3>
-                <p className="text-xs text-muted mt-1">Select 2 to 6 tags. These form the fuel for nearby signal matches.</p>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">{t('Step 3 of 5 · Interests')}</span>
+                <h3 className="text-lg font-bold text-ink-strong mt-0.5">{t('What sparks you outside work?')}</h3>
+                <p className="text-xs text-muted mt-1">{t('Select 2 to 6 tags. These form the fuel for nearby signal matches.')}</p>
               </div>
 
               <div className="flex flex-wrap gap-2 pt-1">
@@ -308,13 +309,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                           : 'bg-card text-muted border-line hover:border-line'
                       }`}
                     >
-                      {item}
+                      {t(item)}
                       {active && <Check className="w-3 h-3 text-people-strong" />}
                     </button>
                   );
                 })}
               </div>
-              <p className="text-[11px] text-subtle font-mono">Selected: {selectedInterests.length} / 6</p>
+              <p className="text-[11px] text-subtle font-mono">{t('Selected: {n} / {max}', { n: selectedInterests.length, max: 6 })}</p>
             </div>
           )}
 
@@ -322,9 +323,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           {step === 4 && (
             <div className="space-y-4">
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">Step 4 of 5 · Seeking</span>
-                <h3 className="text-lg font-bold text-ink-strong mt-0.5">What are you looking for in Dublin?</h3>
-                <p className="text-xs text-muted mt-1">Filters the Opportunity Layer (Housing, Gigs, Companionship) specifically for you.</p>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">{t('Step 4 of 5 · Seeking')}</span>
+                <h3 className="text-lg font-bold text-ink-strong mt-0.5">{t('What are you looking for?')}</h3>
+                <p className="text-xs text-muted mt-1">{t('Filters the Opportunity Layer (Housing, Gigs, Companionship) specifically for you.')}</p>
               </div>
 
               <div className="grid grid-cols-1 @md:grid-cols-2 gap-2">
@@ -340,13 +341,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                           : 'bg-card text-muted border-line hover:border-line'
                       }`}
                     >
-                      <span>{item}</span>
+                      <span>{t(item)}</span>
                       {active && <Check className="w-3.5 h-3.5 text-people-strong" />}
                     </button>
                   );
                 })}
               </div>
-              <p className="text-[11px] text-subtle font-mono">Selected: {selectedLookingFor.length} / 4</p>
+              <p className="text-[11px] text-subtle font-mono">{t('Selected: {n} / {max}', { n: selectedLookingFor.length, max: 4 })}</p>
             </div>
           )}
 
@@ -354,9 +355,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           {step === 5 && (
             <div className="space-y-4">
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">Step 5 of 5 · Contribution</span>
-                <h3 className="text-lg font-bold text-ink-strong mt-0.5">What can you offer to the city?</h3>
-                <p className="text-xs text-muted mt-1">Turns you into a living contributor on the map, not just a consumer.</p>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">{t('Step 5 of 5 · Contribution')}</span>
+                <h3 className="text-lg font-bold text-ink-strong mt-0.5">{t('What can you offer to the city?')}</h3>
+                <p className="text-xs text-muted mt-1">{t('Turns you into a living contributor on the map, not just a consumer.')}</p>
               </div>
 
               <div className="grid grid-cols-1 @md:grid-cols-2 gap-2">
@@ -372,13 +373,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                           : 'bg-card text-muted border-line hover:border-line'
                       }`}
                     >
-                      <span>{item}</span>
+                      <span>{t(item)}</span>
                       {active && <Check className="w-3.5 h-3.5 text-people-strong" />}
                     </button>
                   );
                 })}
               </div>
-              <p className="text-[11px] text-subtle font-mono">Selected: {selectedOffering.length} / 4</p>
+              <p className="text-[11px] text-subtle font-mono">{t('Selected: {n} / {max}', { n: selectedOffering.length, max: 4 })}</p>
             </div>
           )}
 
@@ -386,9 +387,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           {step === 6 && (
             <div className="space-y-4">
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">Final Step · Privacy Radar</span>
-                <h3 className="text-lg font-bold text-ink-strong mt-0.5">Choose your city visibility level</h3>
-                <p className="text-xs text-muted mt-1">You hold total control over how your presence appears to others.</p>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">{t('Final Step · Privacy Radar')}</span>
+                <h3 className="text-lg font-bold text-ink-strong mt-0.5">{t('Choose your city visibility level')}</h3>
+                <p className="text-xs text-muted mt-1">{t('You hold total control over how your presence appears to others.')}</p>
               </div>
 
               <div className="p-3 rounded-2xl bg-card border border-line flex items-center justify-between">
@@ -397,8 +398,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     <MapPin className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xs font-semibold text-ink-strong block">Dublin Geolocation</span>
-                    <span className="text-[11px] text-muted">Required to localize surrounding layers</span>
+                    <span className="text-xs font-semibold text-ink-strong block">{t('Geolocation')}</span>
+                    <span className="text-[11px] text-muted">{t('Required to localize surrounding layers')}</span>
                   </div>
                 </div>
                 <button
@@ -407,7 +408,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     locationPermitted ? 'bg-success-soft text-success border border-success/40' : 'bg-line text-muted'
                   }`}
                 >
-                  {locationPermitted ? 'Granted' : 'Simulated'}
+                  {locationPermitted ? t('Granted') : t('Simulated')}
                 </button>
               </div>
 
@@ -422,7 +423,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   {
                     level: 'district' as VisibilityLevel,
                     title: 'District Level',
-                    desc: 'Coarse city quarter beacon (e.g. "Dublin 2" or "Grand Canal Dock"). High privacy.',
+                    desc: 'Coarse city quarter beacon (e.g. "Grand Canal Dock"). High privacy.',
                     badge: 'Coarse',
                   },
                   {
@@ -434,7 +435,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   {
                     level: 'invisible' as VisibilityLevel,
                     title: 'Ghost / Invisible Mode',
-                    desc: 'Explore Dublin places and opportunities. Nobody sees you on the map.',
+                    desc: 'Explore places and opportunities. Nobody sees you on the map.',
                     badge: 'Stealth',
                   },
                 ].map((item) => {
@@ -458,12 +459,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-semibold text-ink-strong">{item.title}</span>
+                          <span className="text-xs font-semibold text-ink-strong">{t(item.title)}</span>
                           <span className="text-[10px] font-mono text-ink px-1.5 py-0.5 rounded bg-ink-soft border border-line">
-                            {item.badge}
+                            {t(item.badge)}
                           </span>
                         </div>
-                        <p className="text-[11px] text-muted leading-snug">{item.desc}</p>
+                        <p className="text-[11px] text-muted leading-snug">{t(item.desc)}</p>
                       </div>
                     </button>
                   );
@@ -481,10 +482,10 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               className="px-3.5 py-2 rounded-xl text-xs font-medium text-muted hover:text-ink-strong hover:bg-line transition-colors flex items-center gap-1.5"
             >
               <ChevronLeft className="w-4 h-4" />
-              Back
+              {t('Back')}
             </button>
           ) : (
-            <div className="text-[11px] text-subtle font-mono">10 Free Daily Signals Included</div>
+            <div className="text-[11px] text-subtle font-mono">{t('10 Free Daily Signals Included')}</div>
           )}
 
           {step < 6 ? (
@@ -492,7 +493,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               onClick={() => setStep(step + 1)}
               className="px-5 py-2.5 rounded-xl bg-opp hover:bg-opp-hover text-ink-strong font-semibold text-xs transition-all shadow-lg shadow-opp/30 flex items-center gap-2"
             >
-              {step === 0 ? 'Create Dublin Context Pass' : 'Next Step'}
+              {step === 0 ? t('Create Context Pass') : t('Next Step')}
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           ) : (
@@ -501,7 +502,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               className="px-6 py-2.5 rounded-xl bg-opp hover:bg-opp-hover text-ink-strong font-bold text-xs transition-all shadow-lg shadow-opp/30 flex items-center gap-2"
             >
               <Sparkles className="w-4 h-4" />
-              Enter PicMe Dublin
+              {t('Enter PicMe')}
             </button>
           )}
         </div>

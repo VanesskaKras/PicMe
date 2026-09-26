@@ -8,10 +8,11 @@ import {
 } from '@vis.gl/react-google-maps';
 import { DublinPlace, DublinOpportunity, NearbyDublinUser, VisibilityLevel } from '../types';
 import { DublinMap as FallbackLeafletMap } from './DublinMap';
-import { ZoomIn, ZoomOut, Compass } from 'lucide-react';
+import { Compass } from 'lucide-react';
 import { MarkersLayer } from './MapMarkers';
 import { PICME_MAP_STYLE } from './mapStyle';
 import { COLORS } from '../theme';
+import { useI18n } from '../i18n';
 
 interface GoogleDublinMapProps {
   apiKey: string;
@@ -93,33 +94,21 @@ const MapCirclesController: React.FC<{
   return null;
 };
 
-// Custom Zoom and Navigation Buttons
+// Recenter button (zoom is done with pinch / scroll)
 const MapControls: React.FC<{ center: { lat: number; lng: number } }> = ({ center }) => {
   const map = useMap();
+  const { t } = useI18n();
 
+  // Sits below the 40px filters button in App (top-3 right-3), centred under it
   return (
-    <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5 shadow-lg">
-      <button
-        onClick={() => map?.setZoom((map.getZoom() || 14) + 1)}
-        className="w-8 h-8 rounded-xl bg-white hover:bg-card border border-line text-ink shadow-md flex items-center justify-center transition-colors shadow-md"
-        title="Zoom In"
-      >
-        <ZoomIn className="w-4 h-4" />
-      </button>
-      <button
-        onClick={() => map?.setZoom((map.getZoom() || 14) - 1)}
-        className="w-8 h-8 rounded-xl bg-white hover:bg-card border border-line text-ink shadow-md flex items-center justify-center transition-colors shadow-md"
-        title="Zoom Out"
-      >
-        <ZoomOut className="w-4 h-4" />
-      </button>
+    <div className="absolute top-[60px] right-4 z-10">
       <button
         onClick={() => {
           map?.panTo(center);
           map?.setZoom(14);
         }}
         className="w-8 h-8 rounded-xl bg-white hover:bg-card border border-line text-ink shadow-md flex items-center justify-center transition-colors shadow-md"
-        title="Recenter Dublin"
+        title={t('Recenter map')}
       >
         <Compass className="w-4 h-4" />
       </button>
@@ -151,6 +140,7 @@ const GoogleMapsCanvas: React.FC<GoogleDublinMapProps> = (props) => {
   } = props;
 
   const status = useApiLoadingStatus();
+  const { t } = useI18n();
 
   const f = filterCategory.toLowerCase();
   const visiblePeople = !layers.people
@@ -176,11 +166,11 @@ const GoogleMapsCanvas: React.FC<GoogleDublinMapProps> = (props) => {
         (opp) => filterCategory === 'all' || opp.categoryTag.toLowerCase().includes(f) || opp.type.toLowerCase().includes(f)
       );
 
-  // If Google Maps fails to authenticate or load, seamlessly render the dark Dublin map
+  // If Google Maps fails to authenticate or load, seamlessly render the dark map
   if (status === APILoadingStatus.FAILED || status === APILoadingStatus.AUTH_FAILURE) {
     return (
       <div className="relative w-full h-full bg-canvas">
-        {/* Fallback Dublin Vector Map */}
+        {/* Fallback Vector Map */}
         <FallbackLeafletMap
           center={center}
           zoom={zoom}
@@ -210,7 +200,7 @@ const GoogleMapsCanvas: React.FC<GoogleDublinMapProps> = (props) => {
       <div className="w-full h-full bg-canvas flex flex-col items-center justify-center p-4 text-center">
         <div className="w-10 h-10 rounded-full border-2 border-line border-t-ink animate-spin mb-3" />
         <span className="text-xs font-semibold text-ink">Connecting Google Maps Platform...</span>
-        <span className="text-[10px] text-subtle font-mono mt-1">Initializing Dublin Navigation Mesh</span>
+        <span className="text-[10px] text-subtle font-mono mt-1">Initializing Navigation Mesh</span>
       </div>
     );
   }
@@ -258,7 +248,7 @@ const GoogleMapsCanvas: React.FC<GoogleDublinMapProps> = (props) => {
           onSelectUser={(user) => {
             if (!isOnboarded) {
               onRequireOnboarding(
-                `To view ${user.name}'s Dublin profile and mutual resonance signals, complete your context pass.`
+                t("To view {name}'s profile and mutual resonance signals, complete your context pass.", { name: user.name })
               );
             } else {
               onSelectUser(user);
@@ -267,7 +257,7 @@ const GoogleMapsCanvas: React.FC<GoogleDublinMapProps> = (props) => {
           onSelectPlace={(place) => {
             if (!isOnboarded) {
               onRequireOnboarding(
-                `To interact with ${place.name} and view verified community hours, set up your profile context.`
+                t('To interact with {name} and view verified community hours, set up your profile context.', { name: place.name })
               );
             } else {
               onSelectPlace(place);
@@ -276,7 +266,7 @@ const GoogleMapsCanvas: React.FC<GoogleDublinMapProps> = (props) => {
           onSelectOpportunity={(opp) => {
             if (!isOnboarded) {
               onRequireOnboarding(
-                `To access Dublin housing listings, job opportunities, and peer activities, complete onboarding.`
+                t('To access housing listings, job opportunities, and peer activities, complete onboarding.')
               );
             } else {
               onSelectOpportunity(opp);

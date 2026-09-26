@@ -8,7 +8,7 @@
    JS mirror for map APIs: src/theme.ts */
 @theme {
   /* ── 2. LAYERS: colour = type of entity ──────────────────────────
-     people = pink, places = pastel turquoise, opportunities = leaf green.
+     people = pink, places = orange, opportunities = leaf green.
      soft   → chip / tinted background
      (base) → fills, markers, primary button of that layer
      strong → text & icons on white (AA contrast) */
@@ -17,10 +17,10 @@
   --color-people-hover: #e3968b;
   --color-people-strong: #8f5048;
 
-  --color-place-soft: #e2f5f1;
-  --color-place: #9fdcd0;
-  --color-place-hover: #7fcbbd;
-  --color-place-strong: #2e6b61;
+  --color-place-soft: #feeddc;
+  --color-place: #fc8a2d;
+  --color-place-hover: #ea7417;
+  --color-place-strong: #9a4a0e;
 
   --color-opp-soft: #ebf5da;
   --color-opp: #badd7f;

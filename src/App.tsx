@@ -442,7 +442,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-full bg-canvas text-ink-strong flex flex-col items-center justify-center relative font-sans overflow-hidden select-none">
+    <div className="h-[100dvh] w-full bg-canvas text-ink-strong flex flex-col items-center justify-center relative font-sans overflow-hidden select-none">
       {/* GLOBAL TOAST */}
       {toastMessage && (
         <div className="fixed top-4 z-[9999] px-4 py-2.5 rounded-2xl bg-ink/95 backdrop-blur-md text-white font-bold text-xs shadow-2xl flex items-center gap-2 animate-bounce">
